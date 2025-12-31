@@ -1,0 +1,121 @@
+services:
+  vllm:
+    image: vllm/vllm-openai:latest
+    container_name: vllm-qwen3
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    
+    ports:
+      - "8001:8000"
+    
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    
+    command: >
+      --model Qwen/Qwen2.5-3B-Instruct
+      --host 0.0.0.0
+      --port 8000
+      --dtype auto
+      --gpu-memory-utilization 0.90
+      --max-model-len 4096
+    
+    volumes:
+      - ./hf_cache:/root/.cache/huggingface
+    
+    restart: unless-stopped
+
+  dcgm-exporter:
+    image: nvcr.io/nvidia/k8s/dcgm-exporter:4.4.2-4.7.1-ubuntu22.04
+    container_name: dcgm_exporter
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    cap_add:
+      - SYS_ADMIN
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    ports:
+      - "9401:9400"
+    restart: unless-stopped
+
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: node_exporter
+    command:
+      - '--path.rootfs=/host'
+    pid: host
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    volumes:
+      - '/:/host:ro,rslave'
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        cat > /etc/prometheus/prometheus.yml <<EOF
+        global:
+          scrape_interval: 15s
+          evaluation_interval: 15s
+
+        scrape_configs:
+          - job_name: 'dcgm'
+            static_configs:
+              - targets: ['dcgm_exporter:9400']
+          
+          - job_name: 'node'
+            static_configs:
+              - targets: ['node_exporter:9100']
+          
+          - job_name: 'vllm'
+            static_configs:
+              - targets: ['vllm-qwen3:8000']
+            metrics_path: '/metrics'
+          
+          - job_name: 'prometheus'
+            static_configs:
+              - targets: ['localhost:9090']
+        EOF
+        /bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --storage.tsdb.retention.time=15d --web.enable-lifecycle
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+volumes:
+  prometheus_data:
+  grafana_data:
