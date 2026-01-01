@@ -1,0 +1,14 @@
+services:
+  vision-api:
+    build: .
+    ports:
+      - "8029:8029"
+    environment:
+      - MODEL_PATH=effnet_model/best_model_50epochs.pth
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
