@@ -5,6 +5,7 @@ services:
       - "8029:8029"
     environment:
       - MODEL_PATH=effnet_model/best_model_50epochs.pth
+      - APP_MODULE=effnet_api:app
     deploy:
       resources:
         reservations:
