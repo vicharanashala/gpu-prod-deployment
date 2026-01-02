@@ -15,9 +15,12 @@ services:
     
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
+      - HF_HOME=/models/huggingface
+      - TRANSFORMERS_CACHE=/models/huggingface
+      - HF_HUB_CACHE=/models/huggingface
     
     command: >
-      --model Qwen/Qwen3-30B-A3B
+      Qwen/Qwen3-30B-A3B
       --host 0.0.0.0
       --port 8000
       --dtype auto
@@ -28,7 +31,7 @@ services:
       --tool-call-parser hermes
     
     volumes:
-      - ./hf_cache:/root/.cache/huggingface
+      - /app/models:/models
     
     restart: unless-stopped
 
@@ -47,7 +50,7 @@ services:
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
     ports:
-      - "9400:9400"
+      - "9401:9400"
     restart: unless-stopped
 
   node_exporter:
