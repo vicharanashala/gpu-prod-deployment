@@ -61,6 +61,51 @@ services:
               capabilities: [gpu]
 
 
+
+  golden-dataset-mcp:
+    image: vicharanashala/golden_dataset:latest
+    container_name: golden-dataset-mcp
+    ports:
+      - "9006:9001"
+    volumes:
+      - hf_cache:/app/hf_cache
+    restart: unless-stopped
+
+  pop-mcp:
+    image: vicharanashala/pop:latest
+    container_name: pop-mcp
+    ports:
+      - "9002:9002"
+    volumes:
+      - hf_cache:/app/hf_cache
+    restart: unless-stopped
+
+  market-mcp:
+    image: vicharanashala/market:latest
+    container_name: market-mcp
+    ports:
+      - "9003:9003"
+    restart: unless-stopped
+
+  weather-mcp:
+    image: vicharanashala/weather:latest
+    container_name: weather-mcp
+    ports:
+      - "9004:9004"
+    restart: unless-stopped
+
+  faq-mcp:
+    image: vicharanashala/faq:latest
+    container_name: faq-mcp
+    ports:
+      - "9005:9005"
+    volumes:
+      - hf_cache:/app/hf_cache
+    restart: unless-stopped
+
+volumes:
+  hf_cache:
+
 networks:
   default:
     name: ajrasakha_network
