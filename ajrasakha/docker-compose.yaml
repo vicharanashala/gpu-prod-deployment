@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  voice_system_service:
+    image: vicharanashala/voice_services:latest
+    container_name: voice_system_service
+    ports:
+      - "5020:5020"
+
+    volumes:
+      # Backend uploads
+      - ./voice_system_service/backend/uploads:/app/backend/uploads
+      # Backend logs
+      - ./voice_system_service/backend/logs:/app/backend/logs
+      # Supervisor logs
+      - ./voice_system_service/logs/supervisor:/var/log/supervisor
+
+    environment:
+      PYTHONUNBUFFERED: "1"
+      HF_TOKEN: ${HF_TOKEN}
+
+    restart: unless-stopped
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5020/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  default:
+    name: ajrasakha_network
