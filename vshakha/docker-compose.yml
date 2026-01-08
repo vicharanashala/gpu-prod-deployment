@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  faq-mcp-server:
+    image: vicharanashala/faq_vsakha:latest
+    container_name: faq-mcp-server
+    restart: unless-stopped
+    ports:
+      - "9010:9010"
+    environment:
+      # MongoDB Configuration
+      - MONGODB_URI=${MONGODB_URI}
+      - DB_NAME=${DB_NAME:-faq_bootcamp}
+      - COLLECTION_NAME=${COLLECTION_NAME:-questions}
+      
+      # Embedding Configuration
+      - EMBEDDING_PROVIDER=${EMBEDDING_PROVIDER:-local}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-BAAI/bge-large-en-v1.5}
+      - EMBEDDING_DIMENSION=${EMBEDDING_DIMENSION:-1024}
+      
+      # Search Configuration
+      - TFIDF_WEIGHT=${TFIDF_WEIGHT:-0.3}
+      - EMBEDDING_WEIGHT=${EMBEDDING_WEIGHT:-0.7}
+      
+      # Server Configuration
+      - SERVER_HOST=${SERVER_HOST:-0.0.0.0}
+      - SERVER_PORT=${SERVER_PORT:-9010}
+    networks:
+      - vshakha-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  vshakha-network:
+    driver: bridge
