@@ -3,6 +3,14 @@ version: '3.8'
 services:
   faq-mcp-server:
     image: vicharanashala/faq_vsakha:latest
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+
+              device_ids: ['3']
+              capabilities: [gpu]
     container_name: faq-mcp-server
     restart: unless-stopped
     ports:
