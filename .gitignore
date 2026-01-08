@@ -1,3 +1,4 @@
 hf_cache/*
 ajrasakha/voice_system_service/logs/supervisor
 ajrasakha/.env
+vision_model_containerzation/__pycache__

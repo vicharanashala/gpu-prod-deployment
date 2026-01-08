@@ -36,6 +36,31 @@ services:
       retries: 3
       start_period: 40s
 
+  vision-api:
+    image: vicharanashala/effnet:latest
+    container_name: vision_api
+    ports:
+      - "8029:8029"
+
+    volumes:
+      - ../vision_model_containerzation:/app
+
+    environment:
+      LEAF_MODEL_PATH: /app/effnet_model/best_model_50epochs.pth
+      RICE_MODEL_PATH: /app/effnet_model/best_model_b4.pth
+      APP_MODULE: effnet_api:app
+
+    restart: unless-stopped
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+
 networks:
   default:
     name: ajrasakha_network
