@@ -2,8 +2,6 @@ services:
   vllm-gpu1:
     image: vicharanashala/my-vllm-patched:v0.10.2
     container_name: vllm-gpt-oss-gpu1
-    ipc: host
-    runtime: nvidia
     deploy:
       resources:
         reservations:
