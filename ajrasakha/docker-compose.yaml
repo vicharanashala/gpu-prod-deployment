@@ -9,11 +9,11 @@ services:
 
     volumes:
       # Backend uploads
-      - ./voice_system_service/backend/uploads:/app/backend/uploads
+      - /app/ajrasakha/voice_system_service/backend/uploads:/app/backend/uploads
       # Backend logs
-      - ./voice_system_service/backend/logs:/app/backend/logs
+      - /app/ajrasakha/voice_system_service/backend/logs:/app/backend/logs
       # Supervisor logs
-      - ./voice_system_service/logs/supervisor:/var/log/supervisor
+      - /app/ajrasakha/voice_system_service/logs/supervisor:/var/log/supervisor
 
     environment:
       PYTHONUNBUFFERED: "1"
@@ -26,7 +26,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: all
+              device_ids: ['3']
               capabilities: [gpu]
 
     healthcheck:
@@ -36,29 +36,29 @@ services:
       retries: 3
       start_period: 40s
 
-  vision-api:
-    image: vicharanashala/effnet:latest
-    container_name: vision_api
-    ports:
-      - "8029:8029"
+  # vision-api:
+  #   image: vicharanashala/effnet:latest
+  #   container_name: vision_api
+  #   ports:
+  #     - "8029:8029"
 
-    volumes:
-      - ../vision_model_containerzation:/app
+  #   volumes:
+  #     - /app/ajrasakha/vision_model_containerzation:/app
 
-    environment:
-      LEAF_MODEL_PATH: /app/effnet_model/best_model_50epochs.pth
-      RICE_MODEL_PATH: /app/effnet_model/best_model_b4.pth
-      APP_MODULE: effnet_api:app
+  #   environment:
+  #     LEAF_MODEL_PATH: /app/ajrasakha/vision/effnet_model/best_model_50epochs.pth
+  #     RICE_MODEL_PATH: /app/ajrasakha/vision/effnet_model/best_model_b4.pth
+  #     # APP_MODULE: effnet_api:app
 
-    restart: unless-stopped
+  #   restart: unless-stopped
 
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
 
 
 
@@ -68,8 +68,15 @@ services:
     ports:
       - "9006:9001"
     volumes:
-      - hf_cache:/app/hf_cache
+      - /app/models/huggingface:/app/hf_cache
     restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['3']
+              capabilities: [gpu]
 
   pop-mcp:
     image: vicharanashala/pop:latest
@@ -77,8 +84,15 @@ services:
     ports:
       - "9002:9002"
     volumes:
-      - hf_cache:/app/hf_cache
+      - /app/models/huggingface:/app/hf_cache
     restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['3']
+              capabilities: [gpu]
 
   market-mcp:
     image: vicharanashala/market:latest
@@ -100,11 +114,16 @@ services:
     ports:
       - "9005:9005"
     volumes:
-      - hf_cache:/app/hf_cache
+      - /app/models/huggingface:/app/hf_cache
     restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['3']
+              capabilities: [gpu]
 
-volumes:
-  hf_cache:
 
 networks:
   default:
