@@ -57,8 +57,6 @@ services:
       - M_KEY=${M_KEY}
     networks:
       - vshakha-network
-    volumes:
-      - ../ace-client/images/downloads:/app/downloads
 
 networks:
   vshakha-network:
