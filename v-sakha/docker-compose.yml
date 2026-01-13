@@ -53,7 +53,7 @@ services:
       - COLLECTION_NAME=${COLLECTION_NAME:-questions}
       - SERVER_HOST=${SERVER_HOST:-0.0.0.0}
       - ADMIN_SERVER_PORT=${ADMIN_SERVER_PORT:-9011}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - M_KEY=${M_KEY}
     networks:
       - vshakha-network
