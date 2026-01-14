@@ -150,8 +150,3 @@ networks:
           devices:
             - driver: nvidia
               device_ids: ['3']
-              capabilities: [gpu]
-
-networks:
-  default:
-    name: ajrasakha_network
