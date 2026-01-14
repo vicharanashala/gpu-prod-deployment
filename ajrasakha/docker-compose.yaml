@@ -125,9 +125,6 @@ services:
               capabilities: [gpu]
 
 
-networks:
-  default:
-    name: ajrasakha_network
 
   review-search-mcp:
     image: vicharanashala/review-search-mcp:latest
@@ -150,3 +147,8 @@ networks:
           devices:
             - driver: nvidia
               device_ids: ['3']
+              capabilities: [gpu]
+
+networks:
+  default:
+    name: ajrasakha_network
