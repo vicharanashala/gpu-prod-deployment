@@ -10,7 +10,7 @@ from typing import List, Dict
 
 # --- Configuration ---
 LEAF_MODEL_PATH = os.getenv("LEAF_MODEL_PATH", "effnet_model/best_model_50epochs.pth")
-RICE_MODEL_PATH = os.getenv("RICE_MODEL_PATH", "effnet_model/best_model_b4.pth")
+RICE_MODEL_PATH = os.getenv("RICE_MODEL_PATH", "effnet_model/best_model_weightedrandomsampler_b4.pth")
 IMG_SIZE = 380
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
