@@ -4,7 +4,7 @@ services:
     ports:
       - "8029:8029"
     environment:
-      - APP_MODULE=mistral_ocr_compatible_api:app
+      - APP_MODULE=effnet_api:app
     deploy:
       resources:
         reservations:
