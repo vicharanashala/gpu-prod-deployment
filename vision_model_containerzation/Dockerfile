@@ -20,6 +20,6 @@ COPY . .
 EXPOSE 8029
 
 # Set default environment variable for the app module
-ENV APP_MODULE=mistral_ocr_compatible_api:app
+ENV APP_MODULE=effnet_api:app
 
 CMD ["sh", "-c", "uvicorn ${APP_MODULE} --host 0.0.0.0 --port 8029"]

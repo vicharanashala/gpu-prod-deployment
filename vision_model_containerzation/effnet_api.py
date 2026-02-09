@@ -7,6 +7,8 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from torchvision import transforms
 from pydantic import BaseModel
 from typing import List, Dict
+import base64
+import requests
 
 # --- Configuration ---
 LEAF_MODEL_PATH = os.getenv("LEAF_MODEL_PATH", "effnet_model/best_model_50epochs.pth")
@@ -122,6 +124,67 @@ async def predict_leaf(file: UploadFile = File(...)):
 @app.post("/predict/rice", response_model=PredictionResponse)
 async def predict_rice(file: UploadFile = File(...)):
     return await run_inference(file, rice_model, RICE_CLASS_NAMES)
+
+# --- Direct Prediction Logic ---
+
+class ImageUrlInput(BaseModel):
+    url: str
+
+def decode_image(url: str):
+    if url.startswith("data:image"):
+        try:
+            header, encoded = url.split(",", 1)
+            return Image.open(io.BytesIO(base64.b64decode(encoded))).convert("RGB")
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid Base64 string")
+    else:
+        try:
+            resp = requests.get(url, timeout=10)
+            resp.raise_for_status()
+            return Image.open(io.BytesIO(resp.content)).convert("RGB")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Image load failed: {str(e)}")
+
+@app.post("/direct_predict", response_model=PredictionResponse)
+async def direct_predict(data: ImageUrlInput):
+    try:
+        image = decode_image(data.url)
+        input_tensor = preprocess(image).unsqueeze(0).to(DEVICE)
+        
+        with torch.no_grad():
+            # Leaf Inference
+            leaf_out = leaf_model(input_tensor)
+            leaf_probs = torch.nn.functional.softmax(leaf_out, dim=1)[0]
+            leaf_conf, leaf_idx = torch.max(leaf_probs, 0)
+            
+            # Rice Inference
+            rice_out = rice_model(input_tensor)
+            rice_probs = torch.nn.functional.softmax(rice_out, dim=1)[0]
+            rice_conf, rice_idx = torch.max(rice_probs, 0)
+            
+        # Compare and Select Best
+        if leaf_conf.item() > rice_conf.item():
+            winner_conf = leaf_conf.item()
+            winner_idx = leaf_idx.item()
+            winner_probs = leaf_probs
+            winner_names = LEAF_CLASS_NAMES
+        else:
+            winner_conf = rice_conf.item()
+            winner_idx = rice_idx.item()
+            winner_probs = rice_probs
+            winner_names = RICE_CLASS_NAMES
+            
+        prob_dict = {winner_names[i]: float(winner_probs[i]) for i in range(len(winner_names))}
+
+        return PredictionResponse(
+            class_name=winner_names[winner_idx],
+            confidence=float(winner_conf),
+            probabilities=prob_dict
+        )
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
