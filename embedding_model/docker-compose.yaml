@@ -1,0 +1,11 @@
+services:
+  embedding-service:
+    build: .
+    ports:
+      - "8001:8000"
+    volumes:
+      # Optional: Persist huggingface cache so we don't redownload models on every rebuild
+      - huggingface_cache:/root/.cache/huggingface
+
+volumes:
+  huggingface_cache:
