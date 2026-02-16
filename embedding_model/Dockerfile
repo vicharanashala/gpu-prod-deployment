@@ -19,6 +19,13 @@ RUN pip install --no-cache-dir \
     torch \
     transformers
 
+# Set environment variable for Hugging Face cache
+ENV HF_HOME=/app/huggingface_cache
+
+# Copy download script and download model
+COPY download_model.py .
+RUN python download_model.py && rm download_model.py
+
 # Copy application code
 COPY main.py .
 
