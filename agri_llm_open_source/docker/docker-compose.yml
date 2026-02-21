@@ -1,0 +1,113 @@
+# =============================================================
+# docker-compose.yml
+# Services: dhenu (8063) + agri_param (8064)
+# Both use vLLM 0.11.0 with NVIDIA GPU access
+# =============================================================
+
+version: "3.9"
+
+services:
+
+  # -----------------------------------------------------------
+  # Dhenu2-In-Llama3.1-8B-Instruct
+  # GPU device 1 | 70% VRAM | port 8063
+  # -----------------------------------------------------------
+  dhenu:
+    build:
+      context: .
+      dockerfile: Dockerfile.dhenu
+    image: agri-llm/dhenu:latest
+    container_name: dhenu_vllm
+    restart: unless-stopped
+    ports:
+      - "8065:8063"
+    environment:
+      - MODEL=KissanAI/Dhenu2-In-Llama3.1-8B-Instruct
+      - PORT=8063
+      - HOST=0.0.0.0
+      - GPU_MEMORY_UTILIZATION=0.15
+      - MAX_MODEL_LEN=4096
+      - DTYPE=auto
+      - VLLM_USE_MULTIPROCESSING=false
+      - NVIDIA_VISIBLE_DEVICES=0
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - HF_HOME=/root/.cache/huggingface
+    volumes:
+      - huggingface_cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: [ "0" ]
+              capabilities: [ gpu ]
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8063/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    shm_size: "4gb"
+
+  # -----------------------------------------------------------
+  # bharatgenai/AgriParam
+  # GPU device 0 | 15% VRAM | port 8064
+  # -----------------------------------------------------------
+  agri_param:
+    build:
+      context: .
+      dockerfile: Dockerfile.agri_param
+    image: agri-llm/agri_param:latest
+    container_name: agri_param_vllm
+    restart: unless-stopped
+    ports:
+      - "8066:8064"
+    environment:
+      - MODEL=bharatgenai/AgriParam
+      - PORT=8064
+      - HOST=0.0.0.0
+      - GPU_MEMORY_UTILIZATION=0.15
+      - MAX_MODEL_LEN=2048
+      - DTYPE=float16
+      - VLLM_USE_MULTIPROCESSING=false
+      - NVIDIA_VISIBLE_DEVICES=0
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - HF_HOME=/root/.cache/huggingface
+    volumes:
+      - huggingface_cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: [ "0" ]
+              capabilities: [ gpu ]
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8064/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    shm_size: "2gb"
+
+# -----------------------------------------------------------
+# Shared HuggingFace model cache volume
+# Avoids re-downloading models on container restart
+# -----------------------------------------------------------
+volumes:
+  huggingface_cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/aic_u2/.cache/huggingface

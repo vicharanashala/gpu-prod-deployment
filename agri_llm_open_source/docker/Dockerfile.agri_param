@@ -1,0 +1,37 @@
+# ============================================================
+# Dockerfile.agri_param
+# bharatgenai/AgriParam — vLLM OpenAI-Compatible API
+# Port: 8064 | GPU: CUDA device 0 | Memory: 15%
+# Uses custom launcher to register ParamBharatGenForCausalLM
+# ============================================================
+
+FROM vllm/vllm-openai:v0.11.0
+
+# ---- Copy custom launcher ----
+WORKDIR /app
+COPY param_vllm_launcher.py /app/param_vllm_launcher.py
+
+# ---- Environment ----
+ENV MODEL="bharatgenai/AgriParam" \
+    PORT=8064 \
+    HOST="0.0.0.0" \
+    GPU_MEMORY_UTILIZATION=0.15 \
+    MAX_MODEL_LEN=2048 \
+    DTYPE=float16 \
+    VLLM_USE_MULTIPROCESSING=false \
+    HF_HOME=/root/.cache/huggingface
+
+EXPOSE 8064
+
+# Override the base image entrypoint (vllm-openai sets its own)
+ENTRYPOINT ["/bin/sh", "-c"]
+
+# ---- Command ----
+CMD ["python3 /app/param_vllm_launcher.py \
+    --model ${MODEL} \
+    --port ${PORT} \
+    --host ${HOST} \
+    --dtype ${DTYPE} \
+    --gpu-memory-utilization ${GPU_MEMORY_UTILIZATION} \
+    --max-model-len ${MAX_MODEL_LEN} \
+    --trust-remote-code"]
