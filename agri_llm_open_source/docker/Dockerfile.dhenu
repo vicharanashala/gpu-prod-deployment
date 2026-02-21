@@ -1,0 +1,33 @@
+# ============================================================
+# Dockerfile.dhenu
+# Dhenu2-In-Llama3.1-8B-Instruct — vLLM OpenAI-Compatible API
+# Port: 8063 | GPU: CUDA device 1 | Memory: 70%
+# ============================================================
+
+FROM vllm/vllm-openai:v0.11.0
+
+# ---- Environment ----
+ENV MODEL="KissanAI/Dhenu2-In-Llama3.1-8B-Instruct" \
+    PORT=8063 \
+    HOST="0.0.0.0" \
+    GPU_MEMORY_UTILIZATION=0.7 \
+    MAX_MODEL_LEN=4096 \
+    DTYPE=auto \
+    VLLM_USE_MULTIPROCESSING=false \
+    HF_HOME=/root/.cache/huggingface
+
+EXPOSE 8063
+
+# Override the base image entrypoint (vllm-openai sets its own)
+ENTRYPOINT ["/bin/sh", "-c"]
+
+# ---- Command ----
+CMD ["python3 -m vllm.entrypoints.openai.api_server \
+    --model ${MODEL} \
+    --port ${PORT} \
+    --host ${HOST} \
+    --gpu-memory-utilization ${GPU_MEMORY_UTILIZATION} \
+    --max-model-len ${MAX_MODEL_LEN} \
+    --dtype ${DTYPE} \
+    --trust-remote-code \
+    --enforce-eager false"]
