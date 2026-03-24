@@ -2,14 +2,19 @@ name: GCP Deployment
 
 on:
   workflow_dispatch:
+    inputs:
+      service:
+        description: "Service to build & push"
+        required: true
+        type: choice
+        options:
+          - effnet
+          - search_api
 
 permissions:
   contents: read
   packages: write
   id-token: write
-
-env:
-  DOCKER_IMAGE: effnet
 
 jobs:
   build:
@@ -32,13 +37,26 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Set image metadata
+        id: meta
+        run: |
+          if [ "${{ inputs.service }}" = "effnet" ]; then
+            echo "name=effnet"                                  >> $GITHUB_OUTPUT
+            echo "context=./vision_model_containerzation"      >> $GITHUB_OUTPUT
+            echo "dockerfile=./vision_model_containerzation/Dockerfile" >> $GITHUB_OUTPUT
+          elif [ "${{ inputs.service }}" = "search_api" ]; then
+            echo "name=search-api"                             >> $GITHUB_OUTPUT
+            echo "context=./search_api"                        >> $GITHUB_OUTPUT
+            echo "dockerfile=./search_api/Dockerfile"          >> $GITHUB_OUTPUT
+          fi
+
       - name: Build & Push Image
         uses: docker/build-push-action@v5
         with:
-          context: ./vision_model_containerzation
-          file: ./vision_model_containerzation/Dockerfile
+          context: ${{ steps.meta.outputs.context }}
+          file: ${{ steps.meta.outputs.dockerfile }}
           push: true
           platforms: linux/amd64
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE }}:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE }}:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.meta.outputs.name }}:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.meta.outputs.name }}:${{ github.sha }}
