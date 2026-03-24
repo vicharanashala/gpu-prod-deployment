@@ -3,3 +3,4 @@ ajrasakha/voice_system_service/logs/supervisor
 ajrasakha/.env
 search_api/.env
 vision_model_containerzation/__pycache__
+search_api/model_cache

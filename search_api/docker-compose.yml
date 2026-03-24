@@ -1,0 +1,14 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8002:8001"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - model_cache:/app/model_cache
+    restart: always
+
+volumes:
+  model_cache:

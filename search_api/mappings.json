@@ -1,0 +1,3319 @@
+{
+    "crops": {
+        "afiricansarson": [
+            "Afirican Sarson"
+        ],
+        "africansarson": [
+            "African Sarson"
+        ],
+        "almond/apple": [
+            "Almond/Apple"
+        ],
+        "bajra(pearlmillet)": [
+            "Bajra (Pearl Millet)"
+        ],
+        "barley": [
+            "Barley"
+        ],
+        "barleyjau": [
+            "Barley Jau"
+        ],
+        "basmati": [
+            "Basmati"
+        ],
+        "basmatipaddy": [
+            "Basmati Paddy"
+        ],
+        "basmatirice": [
+            "Basmati Rice"
+        ],
+        "bengalgramgramchickpeakabulichana": [
+            "Bengal Gram GramChick PeaKabuliChana"
+        ],
+        "bengalgram": [
+            "Bengal gram"
+        ],
+        "berseem": [
+            "Berseem"
+        ],
+        "bhindi": [
+            "Bhindi",
+            "bhindi"
+        ],
+        "blackcumin(kalonji)": [
+            "Black Cumin (Kalonji)"
+        ],
+        "blackgram": [
+            "Black Gram"
+        ],
+        "bottlegourd": [
+            "Bottle Gourd"
+        ],
+        "brinjal": [
+            "Brinjal"
+        ],
+        "brownsarson": [
+            "Brown Sarson"
+        ],
+        "buffalo": [
+            "Buffalo",
+            "Buffalo "
+        ],
+        "buffalo/cattle": [
+            "Buffalo/Cattle"
+        ],
+        "carrot": [
+            "Carrot"
+        ],
+        "carrots": [
+            "Carrots"
+        ],
+        "cattle": [
+            "Cattle"
+        ],
+        "cauliflower": [
+            "Cauliflower",
+            "cauliflower"
+        ],
+        "cauliflowerandmustard": [
+            "Cauliflower and Mustard"
+        ],
+        "chili": [
+            "Chili"
+        ],
+        "chilli": [
+            "Chilli",
+            "CHILLI",
+            "Chilli "
+        ],
+        "citrus": [
+            "Citrus",
+            "CITRUS",
+            "Citrus "
+        ],
+        "coconut": [
+            "Coconut",
+            "COCONUT"
+        ],
+        "coriander": [
+            "Coriander"
+        ],
+        "cotton": [
+            "Cotton",
+            "cotton",
+            "COTTON",
+            "Cotton "
+        ],
+        "cow/buffalo": [
+            "Cow/Buffalo"
+        ],
+        "cow/cattle": [
+            "Cow/Cattle"
+        ],
+        "cropproduction": [
+            "Crop Production"
+        ],
+        "cropselection": [
+            "Crop Selection"
+        ],
+        "cumin": [
+            "Cumin"
+        ],
+        "dairycattle": [
+            "Dairy Cattle"
+        ],
+        "dairycattle/buffalo": [
+            "Dairy Cattle/Buffalo"
+        ],
+        "dairycow": [
+            "Dairy Cow"
+        ],
+        "drumstick": [
+            "Drumstick",
+            "Drumstick "
+        ],
+        "foddermaize": [
+            "Fodder Maize"
+        ],
+        "fruittrees": [
+            "Fruit Trees"
+        ],
+        "garlic": [
+            "Garlic"
+        ],
+        "garlicandonion": [
+            "Garlic and Onion"
+        ],
+        "general": [
+            "General"
+        ],
+        "generalcrops": [
+            "General Crops",
+            "General crops"
+        ],
+        "generalquery": [
+            "General Query"
+        ],
+        "gram": [
+            "Gram"
+        ],
+        "gramchick": [
+            "GramChick"
+        ],
+        "greengram": [
+            "Green Gram",
+            "Greengram"
+        ],
+        "greengram(moongbean)": [
+            "Green Gram (Moong Bean)"
+        ],
+        "groundnut": [
+            "Groundnut",
+            "groundnut",
+            "GROUNDNUT"
+        ],
+        "guava": [
+            "Guava"
+        ],
+        "indianrapeseedandmustardyellowsarson": [
+            "Indian rapeseed and mustard yellow sarson"
+        ],
+        "lemon": [
+            "Lemon"
+        ],
+        "lentilmasur": [
+            "Lentil Masur"
+        ],
+        "linseedalsi": [
+            "Linseed alsi"
+        ],
+        "livestock": [
+            "Livestock"
+        ],
+        "maize": [
+            "Maize",
+            "maize",
+            "Maize ",
+            "Maize  "
+        ],
+        "maize(fodder)": [
+            "Maize (Fodder)"
+        ],
+        "maizemakka": [
+            "Maize Makka"
+        ],
+        "maize/fodder": [
+            "Maize/Fodder"
+        ],
+        "mango": [
+            "Mango"
+        ],
+        "moong": [
+            "Moong"
+        ],
+        "mustard": [
+            "Mustard",
+            "Mustard "
+        ],
+        "n/a": [
+            "N/A"
+        ],
+        "notapplicable-animalhusbandry": [
+            "Not Applicable - Animal Husbandry"
+        ],
+        "notspecified": [
+            "Not specified"
+        ],
+        "oats": [
+            "Oats"
+        ],
+        "okra": [
+            "Okra",
+            "OKRA",
+            "okra"
+        ],
+        "onion": [
+            "Onion"
+        ],
+        "orange": [
+            "Orange",
+            "ORANGE",
+            "Orange "
+        ],
+        "paddy": [
+            "Paddy",
+            "paddy",
+            "PADDY",
+            "Paddy "
+        ],
+        "paddy(dhan)": [
+            "Paddy (Dhan)"
+        ],
+        "pea": [
+            "Pea",
+            "Pea "
+        ],
+        "poplar": [
+            "Poplar"
+        ],
+        "poplar(agroforestry)": [
+            "Poplar (Agroforestry)"
+        ],
+        "potato": [
+            "Potato",
+            "potato"
+        ],
+        "potatoes": [
+            "Potatoes",
+            "potatoes"
+        ],
+        "pulses": [
+            "Pulses"
+        ],
+        "ragi": [
+            "Ragi"
+        ],
+        "rayaindianmustard": [
+            "Raya Indian Mustard"
+        ],
+        "rice": [
+            "Rice",
+            "rice"
+        ],
+        "soybean": [
+            "Soybean",
+            "soybean",
+            "SOYBEAN",
+            "SOYBEAN  ",
+            "Soybean "
+        ],
+        "sugarcane": [
+            "Sugarcane",
+            "sugarcane",
+            "SUGARCANE",
+            "Sugarcane "
+        ],
+        "summervegetables": [
+            "Summer Vegetables"
+        ],
+        "tomato": [
+            "Tomato",
+            "tomato",
+            "TOMATO"
+        ],
+        "tomatoes": [
+            "Tomatoes"
+        ],
+        "toria": [
+            "Toria"
+        ],
+        "turmeric": [
+            "Turmeric",
+            "turmeric"
+        ],
+        "unknown": [
+            "Unknown",
+            "unknown"
+        ],
+        "vegetables": [
+            "Vegetables"
+        ],
+        "wheat": [
+            "WHEAT",
+            "Wheat",
+            "wheat",
+            "Wheat "
+        ],
+        "weather": [
+            "Weather"
+        ],
+        "wheat,paddy,sugarcane": [
+            "Wheat, Paddy, Sugarcane"
+        ],
+        "all": [
+            "all"
+        ],
+        "apple": [
+            "apple",
+            "Apple"
+        ],
+        "sweetpotato": [
+            "sweet potato",
+            "sweetpotato"
+        ],
+        "\u0a1d\u0a4b\u0a28\u0a47": [
+            "\u0a1d\u0a4b\u0a28\u0a47"
+        ],
+        "\u0a27\u0a3e\u0a28": [
+            "\u0a27\u0a3e\u0a28"
+        ],
+        "aghave": [
+            "Aghave"
+        ],
+        "amaranthus": [
+            "Amaranthus",
+            "Amaranthus "
+        ],
+        "amla": [
+            "Amla"
+        ],
+        "amla(indiangooseberry)": [
+            "Amla (Indian Gooseberry)"
+        ],
+        "aonla": [
+            "Aonla"
+        ],
+        "arecanut": [
+            "Arecanut"
+        ],
+        "arhar(pigeonpea)": [
+            "Arhar(Pigeon pea)"
+        ],
+        "ashoka": [
+            "Ashoka"
+        ],
+        "bee": [
+            "BEE"
+        ],
+        "bhindi(ladyfinger,okra)": [
+            "BHINDI (Ladyfinger, Okra)"
+        ],
+        "bird": [
+            "BIRD"
+        ],
+        "brnjal": [
+            "BRNJAL"
+        ],
+        "bullock": [
+            "BULLOCK",
+            "Bullock"
+        ],
+        "bajra": [
+            "Bajra"
+        ],
+        "bamboo": [
+            "Bamboo"
+        ],
+        "banana": [
+            "Banana"
+        ],
+        "banana(dwarfcavendish)": [
+            "Banana (Dwarf Cavendish)"
+        ],
+        "bannana": [
+            "Bannana"
+        ],
+        "barseem": [
+            "Barseem"
+        ],
+        "beekeeping": [
+            "Beekeeping"
+        ],
+        "bellpepper": [
+            "Bell pepper"
+        ],
+        "bengalgramandwheat": [
+            "Bengal Gram and Wheat"
+        ],
+        "bengalgram/gram/chickpea/kabulichana": [
+            "Bengal Gram/ Gram/ Chick Pea/ Kabuli Chana"
+        ],
+        "ber": [
+            "Ber"
+        ],
+        "betelvine": [
+            "Betel vine",
+            "Betelvine "
+        ],
+        "bhendi(okra)": [
+            "Bhendi(Okra)"
+        ],
+        "bhindi/okra": [
+            "Bhindi/ okra"
+        ],
+        "birds": [
+            "Birds"
+        ],
+        "bittergourd": [
+            "Bitter Gourd",
+            "Bitter gourd "
+        ],
+        "blackpepper": [
+            "Black pepper",
+            "Black pepper "
+        ],
+        "bovine/cow/buffalo": [
+            "Bovine/Cow/Buffalo"
+        ],
+        "brinjal,okra": [
+            "Brinjal, Okra"
+        ],
+        "broccoli": [
+            "Broccoli"
+        ],
+        "brocolli": [
+            "Brocolli "
+        ],
+        "broiler": [
+            "Broiler"
+        ],
+        "btcotton": [
+            "Bt Cotton"
+        ],
+        "bufallo": [
+            "Bufallo"
+        ],
+        "custardapple": [
+            "CUSTARD APPLE"
+        ],
+        "cabbage": [
+            "Cabbage"
+        ],
+        "calf": [
+            "Calf"
+        ],
+        "capcicum": [
+            "Capcicum "
+        ],
+        "capsicum": [
+            "Capsicum"
+        ],
+        "cardamom": [
+            "Cardamom"
+        ],
+        "cashew": [
+            "Cashew"
+        ],
+        "cassava(tapioca)": [
+            "Cassava (Tapioca)"
+        ],
+        "castor": [
+            "Castor",
+            "Castor "
+        ],
+        "casuarina": [
+            "Casuarina"
+        ],
+        "chicken": [
+            "Chicken"
+        ],
+        "chowchow": [
+            "Chow chow"
+        ],
+        "chrysanthemum": [
+            "Chrysanthemum"
+        ],
+        "citronella": [
+            "Citronella "
+        ],
+        "cocoa": [
+            "Cocoa"
+        ],
+        "colocasia": [
+            "Colocasia",
+            "Colocasia "
+        ],
+        "colocasia(pudikaranai)": [
+            "Colocasia (Pudi Karanai)"
+        ],
+        "congressgrass": [
+            "Congress grass"
+        ],
+        "cotton(kapas)": [
+            "Cotton (Kapas)"
+        ],
+        "cottonkapas": [
+            "Cotton Kapas"
+        ],
+        "cow": [
+            "Cow"
+        ],
+        "cowpea(lobia)": [
+            "Cowpea(Lobia)"
+        ],
+        "crossandra(crossandrainfundibuliformisl.)": [
+            "Crossandra( Crossandra infundibuliformis L . )"
+        ],
+        "cucumber": [
+            "Cucumber"
+        ],
+        "cumbu(pearlmillet)": [
+            "Cumbu (Pearl millet)"
+        ],
+        "cumbunapier": [
+            "Cumbu Napier"
+        ],
+        "custardapple(sitafal)": [
+            "Custard apple(Sitafal)"
+        ],
+        "dashparniarka(medicinalplant)": [
+            "DASHPARNI ARKA (MEDICINAL PLANT)"
+        ],
+        "datepalm(khajoor)": [
+            "Date Palm(Khajoor)"
+        ],
+        "dog": [
+            "Dog"
+        ],
+        "dovebird": [
+            "Dove Bird"
+        ],
+        "duck": [
+            "Duck"
+        ],
+        "durian(durky)": [
+            "Durian (Durky) "
+        ],
+        "eculeptous": [
+            "Eculeptous"
+        ],
+        "elaichi": [
+            "Elaichi"
+        ],
+        "elephantplant": [
+            "Elephant Plant"
+        ],
+        "emu": [
+            "Emu"
+        ],
+        "eucalyptus": [
+            "Eucalyptus"
+        ],
+        "eucalyptustereticornis/safeda": [
+            "Eucalyptus tereticornis / Safeda"
+        ],
+        "freanchbean": [
+            "FREANCHBEAN"
+        ],
+        "fenugreek": [
+            "Fenugreek"
+        ],
+        "fingermillet": [
+            "Finger millet "
+        ],
+        "fish": [
+            "Fish"
+        ],
+        "fodder": [
+            "Fodder"
+        ],
+        "gen": [
+            "GEN",
+            "Gen"
+        ],
+        "ginger": [
+            "Ginger"
+        ],
+        "giripushpa": [
+            "Giripushpa "
+        ],
+        "glorylily": [
+            "Glory Lily"
+        ],
+        "glorylilly": [
+            "Glory lilly"
+        ],
+        "glyricidia": [
+            "Glyricidia "
+        ],
+        "goat": [
+            "Goat"
+        ],
+        "gourd": [
+            "Gourd"
+        ],
+        "gram(chickpea)": [
+            "Gram(Chick Pea)",
+            "Gram(Chickpea)"
+        ],
+        "grape": [
+            "Grape"
+        ],
+        "grapes": [
+            "Grapes",
+            "Grapes "
+        ],
+        "grapes,banana": [
+            "Grapes, Banana"
+        ],
+        "greengrammoongbeanmoong": [
+            "Green Gram Moong Bean Moong"
+        ],
+        "greengram/moong": [
+            "Green gram / Moong"
+        ],
+        "greengram/blackgram": [
+            "Green gram/Black gram"
+        ],
+        "guar": [
+            "Guar"
+        ],
+        "hen(chicks)": [
+            "Hen (chicks)"
+        ],
+        "honeybee": [
+            "Honeybee"
+        ],
+        "indianrapeseedandmustrad": [
+            "Indian Rapeseed and Mustrad"
+        ],
+        "jackfruit": [
+            "JACKFRUIT"
+        ],
+        "jasmine": [
+            "Jasmine"
+        ],
+        "jatropha": [
+            "Jatropha "
+        ],
+        "jowar": [
+            "Jowar"
+        ],
+        "jute": [
+            "Jute"
+        ],
+        "kaadai(japanesequail)": [
+            "Kaadai (Japanese Quail)"
+        ],
+        "keelanelli(phyllanthusamarus)": [
+            "Keelanelli (Phyllanthus amarus)"
+        ],
+        "khasikateri": [
+            "Khasi Kateri"
+        ],
+        "kiwifruit": [
+            "Kiwi Fruit"
+        ],
+        "kumiltrees": [
+            "Kumil trees"
+        ],
+        "lemon(citrus)": [
+            "LEMON (CITRUS)"
+        ],
+        "lentil": [
+            "LENTIL",
+            "Lentil"
+        ],
+        "lablab": [
+            "Lablab"
+        ],
+        "lime": [
+            "Lime"
+        ],
+        "litchi": [
+            "Litchi"
+        ],
+        "llinseed": [
+            "Llinseed"
+        ],
+        "lucerne": [
+            "Lucerne"
+        ],
+        "mausambi": [
+            "MAUSAMBI"
+        ],
+        "mint": [
+            "MINT"
+        ],
+        "mithun": [
+            "MIthun",
+            "Mithun"
+        ],
+        "moong(greengram)": [
+            "MOONG(Green gram)",
+            "Moong(Green gram)",
+            "Moong(green gram)"
+        ],
+        "mosabmi": [
+            "MOSABMI"
+        ],
+        "maize(makka)": [
+            "Maize (Makka)"
+        ],
+        "maizeandwheat": [
+            "Maize and Wheat"
+        ],
+        "marigold": [
+            "Marigold",
+            "Marigold "
+        ],
+        "matchwood": [
+            "Match wood "
+        ],
+        "millet": [
+            "Millet"
+        ],
+        "mung": [
+            "Mung"
+        ],
+        "mushroom": [
+            "Mushroom",
+            "Mushroom "
+        ],
+        "muskmelon": [
+            "Muskmelon"
+        ],
+        "napiergrass": [
+            "Napier grass"
+        ],
+        "neem": [
+            "Neem"
+        ],
+        "nutmeg": [
+            "Nutmeg"
+        ],
+        "ox": [
+            "OX",
+            "Ox"
+        ],
+        "okra(bhindi)": [
+            "Okra (Bhindi)"
+        ],
+        "okra/ladyfinger": [
+            "Okra / Lady finger"
+        ],
+        "okra(bhendi)": [
+            "Okra(Bhendi)"
+        ],
+        "orchid": [
+            "Orchid"
+        ],
+        "papaya": [
+            "PAPAYA",
+            "Papaya"
+        ],
+        "paddy(basmati)": [
+            "Paddy ( Basmati)",
+            "Paddy(Basmati)"
+        ],
+        "paddydhan": [
+            "Paddy Dhan"
+        ],
+        "padhimugam(heartwoodofsappanwoodtree)": [
+            "Padhimugam (Heartwood of Sappanwood tree)"
+        ],
+        "palm": [
+            "Palm"
+        ],
+        "pathimugam": [
+            "Pathimugam"
+        ],
+        "pathimugam(sappanwoodoreastindianredwood)": [
+            "Pathimugam (sappan wood or East Indian red wood)"
+        ],
+        "pearlmillet(combu)": [
+            "Pearl millet (combu)"
+        ],
+        "pearlmillet(cumbu)": [
+            "Pearl millet (cumbu)"
+        ],
+        "peenari/maharuku": [
+            "Peenari/Maharuku"
+        ],
+        "periwinkle(catharanthusroseus)": [
+            "Periwinkle (Catharanthus roseus)"
+        ],
+        "pig": [
+            "Pig"
+        ],
+        "pigeonpea": [
+            "Pigeon Pea",
+            "Pigeon pea"
+        ],
+        "pigeonpea(arhar)": [
+            "Pigeon pea(Arhar)"
+        ],
+        "pineapple": [
+            "Pineapple"
+        ],
+        "pomegranate": [
+            "Pomegranate",
+            "pomegranate"
+        ],
+        "poultry": [
+            "Poultry"
+        ],
+        "pumpkin": [
+            "Pumpkin",
+            "Pumpkin "
+        ],
+        "quail": [
+            "Quail"
+        ],
+        "rose": [
+            "ROSE",
+            "Rose"
+        ],
+        "rabbit": [
+            "Rabbit"
+        ],
+        "radish": [
+            "Radish"
+        ],
+        "ragi(fingermillet)": [
+            "Ragi (Finger millet)"
+        ],
+        "rapeseed(toria)": [
+            "Rapeseed (Toria)"
+        ],
+        "rubber": [
+            "Rubber"
+        ],
+        "soyabean": [
+            "SOYABEAN",
+            "Soyabean",
+            "Soyabean "
+        ],
+        "safflower": [
+            "Safflower "
+        ],
+        "sesame": [
+            "Sesame"
+        ],
+        "sesame(gingelly)": [
+            "Sesame (gingelly)"
+        ],
+        "she-oak/casuarinaequisetifolia": [
+            "She-oak/Casuarina equisetifolia"
+        ],
+        "sheep": [
+            "Sheep"
+        ],
+        "singunia(syngonium)": [
+            "Singunia (Syngonium)"
+        ],
+        "sonchafa": [
+            "Sonchafa "
+        ],
+        "sorghum": [
+            "Sorghum "
+        ],
+        "squirrel": [
+            "Squirrel"
+        ],
+        "subabhul": [
+            "Subabhul"
+        ],
+        "summermoong(greengram)": [
+            "Summer Moong (Green Gram)"
+        ],
+        "sunflower": [
+            "Sunflower"
+        ],
+        "sunhemp": [
+            "Sunhemp"
+        ],
+        "sweetcorn": [
+            "Sweet corn"
+        ],
+        "turkey": [
+            "TURKEY",
+            "Turkey"
+        ],
+        "tapioca": [
+            "Tapioca"
+        ],
+        "tea": [
+            "Tea"
+        ],
+        "tobacco": [
+            "Tobacco",
+            "Tobacco "
+        ],
+        "triticale/wheat": [
+            "Triticale / Wheat"
+        ],
+        "tuberose": [
+            "Tuberose"
+        ],
+        "turnipsaljam": [
+            "Turnip Saljam"
+        ],
+        "urd(blackgram)": [
+            "Urd (Black Gram)"
+        ],
+        "vanraja": [
+            "Vanraja"
+        ],
+        "vasambu(acoruscalamus)": [
+            "Vasambu (Acorus calamus)",
+            "Vasambu(Acorus calamus)"
+        ],
+        "walnut": [
+            "Walnut"
+        ],
+        "watermelon": [
+            "Watermelon",
+            "Watermelon "
+        ],
+        "wheatandbarley": [
+            "Wheat and Barley"
+        ],
+        "wildcastor": [
+            "Wild Castor"
+        ],
+        "yaks": [
+            "Yaks"
+        ],
+        "spinach": [
+            "spinach"
+        ]
+    },
+    "states": {
+        "arunachalpradesh": [
+            "Arunachal Pradesh",
+            "ARUNACHAL PRADESH"
+        ],
+        "bihar": [
+            "Bihar",
+            "BIHAR"
+        ],
+        "chandigarh": [
+            "Chandigarh"
+        ],
+        "delhi": [
+            "Delhi"
+        ],
+        "gujarat": [
+            "Gujarat"
+        ],
+        "haryana": [
+            "Haryana"
+        ],
+        "himachalpradesh": [
+            "Himachal Pradesh",
+            "HIMACHAL PRADESH"
+        ],
+        "jammuandkashmir": [
+            "Jammu and Kashmir"
+        ],
+        "karnataka": [
+            "Karnataka"
+        ],
+        "madhyapradesh": [
+            "Madhya Pradesh",
+            "MADHYA PRADESH"
+        ],
+        "maharashtra": [
+            "Maharashtra",
+            "MAHARASHTRA"
+        ],
+        "meghalaya": [
+            "Meghalaya"
+        ],
+        "n/a": [
+            "N/A"
+        ],
+        "notspecified": [
+            "Not specified"
+        ],
+        "odisha": [
+            "Odisha",
+            "ODISHA"
+        ],
+        "punjab": [
+            "Punjab",
+            "PUNJAB"
+        ],
+        "rajasthan": [
+            "Rajasthan"
+        ],
+        "sikkim": [
+            "Sikkim"
+        ],
+        "tamilnadu": [
+            "TAMILNADU",
+            "Tamil Nadu"
+        ],
+        "telangana": [
+            "Telangana",
+            "TELANGANA"
+        ],
+        "uttarpradesh": [
+            "UTTAR PRADESH",
+            "Uttar Pradesh",
+            "Uttar Pradesh "
+        ],
+        "unknown": [
+            "Unknown",
+            "unknown"
+        ],
+        "uttarakhand": [
+            "Uttarakhand",
+            "UTTARAKHAND"
+        ],
+        "westbengal": [
+            "West Bengal",
+            "WEST BENGAL"
+        ],
+        "all": [
+            "all"
+        ],
+        "\u0a2a\u0a70\u0a1c\u0a3e\u0a2c": [
+            "\u0a2a\u0a70\u0a1c\u0a3e\u0a2c"
+        ],
+        "andhrapradesh": [
+            "ANDHRA PRADESH"
+        ],
+        "assam": [
+            "ASSAM"
+        ],
+        "chhattisgarh": [
+            "CHHATTISGARH"
+        ],
+        "jharkand": [
+            "JHARKAND"
+        ],
+        "kerala": [
+            "KERALA"
+        ],
+        "puducherry": [
+            "PUDUCHERRY"
+        ]
+    },
+    "districts": {
+        "#n/a": [
+            "#N/A"
+        ],
+        "agar": [
+            "AGAR"
+        ],
+        "agra": [
+            "AGRA"
+        ],
+        "ahmadnagar": [
+            "AHMADNAGAR"
+        ],
+        "akola": [
+            "AKOLA"
+        ],
+        "alanganallur": [
+            "ALANGANALLUR"
+        ],
+        "aligarh": [
+            "ALIGARH"
+        ],
+        "allahabad": [
+            "ALLAHABAD"
+        ],
+        "amarpatan": [
+            "AMARPATAN"
+        ],
+        "ambala": [
+            "AMBALA",
+            "Ambala"
+        ],
+        "ambasamudram": [
+            "AMBASAMUDRAM"
+        ],
+        "ambedkarnagar": [
+            "AMBEDKAR NAGAR"
+        ],
+        "amethi(shahujimaharaj)": [
+            "AMETHI ( Shahu Ji Maharaj)"
+        ],
+        "amethishahujimaharaj": [
+            "AMETHI Shahu Ji Maharaj"
+        ],
+        "ammapettai": [
+            "AMMAPETTAI"
+        ],
+        "amravati": [
+            "AMRAVATI"
+        ],
+        "amritsar": [
+            "AMRITSAR",
+            "Amritsar"
+        ],
+        "amroha": [
+            "AMROHA"
+        ],
+        "anugul": [
+            "ANUGUL"
+        ],
+        "ariyalur": [
+            "ARIYALUR"
+        ],
+        "ashoknagar": [
+            "ASHOKNAGAR"
+        ],
+        "auraiya": [
+            "AURAIYA"
+        ],
+        "aurangabad": [
+            "AURANGABAD"
+        ],
+        "azamgarh": [
+            "AZAMGARH"
+        ],
+        "ajmer": [
+            "Ajmer"
+        ],
+        "alipurduar": [
+            "Alipurduar"
+        ],
+        "all": [
+            "All",
+            "all"
+        ],
+        "almora": [
+            "Almora",
+            "ALMORA"
+        ],
+        "ayodhya": [
+            "Ayodhya"
+        ],
+        "badaun": [
+            "BADAUN"
+        ],
+        "bagalkot": [
+            "BAGALKOT"
+        ],
+        "baghpat": [
+            "BAGHPAT"
+        ],
+        "bahraich": [
+            "BAHRAICH"
+        ],
+        "balaghat": [
+            "BALAGHAT"
+        ],
+        "ballia": [
+            "BALLIA"
+        ],
+        "balrampur": [
+            "BALRAMPUR",
+            "Balrampur"
+        ],
+        "banda": [
+            "BANDA"
+        ],
+        "bangalorerural": [
+            "BANGALORE RURAL"
+        ],
+        "bankura": [
+            "BANKURA"
+        ],
+        "barabanki": [
+            "BARABANKI"
+        ],
+        "barddhaman": [
+            "BARDDHAMAN"
+        ],
+        "bareilly": [
+            "BAREILLY",
+            "Bareilly"
+        ],
+        "bargarh": [
+            "BARGARH"
+        ],
+        "barnala": [
+            "BARNALA"
+        ],
+        "basti": [
+            "BASTI"
+        ],
+        "bathinda": [
+            "BATHINDA",
+            "Bathinda"
+        ],
+        "beed": [
+            "BEED"
+        ],
+        "belgaum": [
+            "BELGAUM"
+        ],
+        "bellary": [
+            "BELLARY"
+        ],
+        "betul": [
+            "BETUL"
+        ],
+        "bhadrak": [
+            "BHADRAK"
+        ],
+        "bhatinda": [
+            "BHATINDA"
+        ],
+        "bhind": [
+            "BHIND"
+        ],
+        "bhiwani": [
+            "BHIWANI",
+            "Bhiwani"
+        ],
+        "bhopal": [
+            "BHOPAL"
+        ],
+        "bidar": [
+            "BIDAR"
+        ],
+        "bijapur": [
+            "BIJAPUR"
+        ],
+        "bijnor": [
+            "BIJNOR"
+        ],
+        "birbhum": [
+            "BIRBHUM"
+        ],
+        "budalur": [
+            "BUDALUR"
+        ],
+        "bulandshahar": [
+            "BULANDSHAHAR"
+        ],
+        "buldana": [
+            "BULDANA"
+        ],
+        "burhanpur": [
+            "BURHANPUR"
+        ],
+        "badmer": [
+            "Badmer"
+        ],
+        "bangalore": [
+            "Bangalore"
+        ],
+        "bengaluru": [
+            "Bengaluru"
+        ],
+        "chandauli": [
+            "CHANDAULI"
+        ],
+        "charkidadri": [
+            "CHARKI DADRI"
+        ],
+        "chengalpattu": [
+            "CHENGALPATTU"
+        ],
+        "chennaimadras": [
+            "CHENNAIMADRAS"
+        ],
+        "chhatarpur": [
+            "CHHATARPUR"
+        ],
+        "chhindwara": [
+            "CHHINDWARA"
+        ],
+        "chitrakoot": [
+            "CHITRAKOOT"
+        ],
+        "coimbatore": [
+            "COIMBATORE"
+        ],
+        "cuddalore": [
+            "CUDDALORE"
+        ],
+        "cuttack": [
+            "CUTTACK"
+        ],
+        "cauverydelta": [
+            "Cauvery Delta"
+        ],
+        "centraldelhi": [
+            "Central Delhi"
+        ],
+        "chamkaursahib": [
+            "Chamkaur Sahib"
+        ],
+        "chamrajnagar": [
+            "Chamrajnagar"
+        ],
+        "chandigarh": [
+            "Chandigarh"
+        ],
+        "coochbihar": [
+            "Cooch BIHAR"
+        ],
+        "damoh": [
+            "DAMOH"
+        ],
+        "darjeeling": [
+            "DARJEELING"
+        ],
+        "datia": [
+            "DATIA"
+        ],
+        "deori": [
+            "DEORI"
+        ],
+        "deoria": [
+            "DEORIA"
+        ],
+        "dewas": [
+            "DEWAS"
+        ],
+        "dhar": [
+            "DHAR"
+        ],
+        "dharmapuri": [
+            "DHARMAPURI"
+        ],
+        "dharwad": [
+            "DHARWAD"
+        ],
+        "dhule": [
+            "DHULE"
+        ],
+        "dindigul": [
+            "DINDIGUL"
+        ],
+        "dindori": [
+            "DINDORI"
+        ],
+        "delhi": [
+            "Delhi"
+        ],
+        "dinpur": [
+            "Dinpur"
+        ],
+        "eastmedinipur": [
+            "EAST MEDINIPUR"
+        ],
+        "eastnimar": [
+            "EAST NIMAR"
+        ],
+        "ellapuram": [
+            "ELLAPURAM"
+        ],
+        "erode": [
+            "ERODE",
+            "Erode"
+        ],
+        "etah": [
+            "ETAH"
+        ],
+        "etawah": [
+            "ETAWAH"
+        ],
+        "faizabad": [
+            "FAIZABAD"
+        ],
+        "faq": [
+            "FAQ"
+        ],
+        "faridabad": [
+            "FARIDABAD",
+            "Faridabad"
+        ],
+        "faridkot": [
+            "FARIDKOT"
+        ],
+        "farrukhabad": [
+            "FARRUKHABAD"
+        ],
+        "fatehabad": [
+            "FATEHABAD",
+            "Fatehabad"
+        ],
+        "fatehgarhsahib": [
+            "FATEHGARH SAHIB"
+        ],
+        "fatehpur": [
+            "FATEHPUR"
+        ],
+        "fazilka": [
+            "FAZILKA"
+        ],
+        "ferozpur": [
+            "FEROZPUR"
+        ],
+        "firozabad": [
+            "FIROZABAD"
+        ],
+        "gadag": [
+            "GADAG"
+        ],
+        "ganjam": [
+            "GANJAM"
+        ],
+        "gautambuddhanagar": [
+            "GAUTAM BUDDHA NAGAR"
+        ],
+        "ghaziabad": [
+            "GHAZIABAD"
+        ],
+        "ghazipur": [
+            "GHAZIPUR"
+        ],
+        "gonda": [
+            "GONDA"
+        ],
+        "gorakhpur": [
+            "GORAKHPUR",
+            "Gorakhpur"
+        ],
+        "gulbarga": [
+            "GULBARGA"
+        ],
+        "guna": [
+            "GUNA"
+        ],
+        "gurdaspur": [
+            "GURDASPUR",
+            "Gurdaspur"
+        ],
+        "gurgaon": [
+            "GURGAON",
+            "Gurgaon"
+        ],
+        "gwalior": [
+            "GWALIOR"
+        ],
+        "gardmer": [
+            "Gardmer"
+        ],
+        "hamirpur": [
+            "HAMIRPUR"
+        ],
+        "hapur(panchsheelnagar)": [
+            "HAPUR (PANCHSHEEL NAGAR)"
+        ],
+        "hapurpanchsheelnagar": [
+            "HAPUR PANCHSHEEL NAGAR"
+        ],
+        "harda": [
+            "HARDA"
+        ],
+        "hardoi": [
+            "HARDOI"
+        ],
+        "hathras": [
+            "HATHRAS"
+        ],
+        "hingoli": [
+            "HINGOLI",
+            "Hingoli"
+        ],
+        "hissar": [
+            "HISSAR",
+            "Hissar"
+        ],
+        "hooghly": [
+            "HOOGHLY"
+        ],
+        "hoshangabad": [
+            "HOSHANGABAD"
+        ],
+        "hoshiarpur": [
+            "HOSHIARPUR"
+        ],
+        "howrah": [
+            "HOWRAH"
+        ],
+        "haridwar": [
+            "Haridwar",
+            "HARIDWAR"
+        ],
+        "hisar": [
+            "Hisar"
+        ],
+        "hyderabad": [
+            "Hyderabad"
+        ],
+        "indore": [
+            "INDORE",
+            "Indore"
+        ],
+        "jabalpur": [
+            "JABALPUR"
+        ],
+        "jajapur": [
+            "JAJAPUR"
+        ],
+        "jalandhar": [
+            "JALANDHAR"
+        ],
+        "jalaun": [
+            "JALAUN"
+        ],
+        "jalgaon": [
+            "JALGAON"
+        ],
+        "jalna": [
+            "JALNA"
+        ],
+        "jalpaiguri": [
+            "JALPAIGURI"
+        ],
+        "jaunpur": [
+            "JAUNPUR"
+        ],
+        "jhajjar": [
+            "JHAJJAR",
+            "Jhajjar"
+        ],
+        "jhansi": [
+            "JHANSI"
+        ],
+        "jind": [
+            "JIND",
+            "Jind"
+        ],
+        "jyotibaphulenagar": [
+            "JYOTIBA PHULE NAGAR"
+        ],
+        "kaithal": [
+            "KAITHAL",
+            "Kaithal"
+        ],
+        "kalahandi": [
+            "KALAHANDI"
+        ],
+        "kallakurichi": [
+            "KALLAKURICHI"
+        ],
+        "kancheepuram": [
+            "KANCHEEPURAM"
+        ],
+        "kannauj": [
+            "KANNAUJ"
+        ],
+        "kanniyakumari": [
+            "KANNIYA KUMARI"
+        ],
+        "kanpurcity": [
+            "KANPUR CITY"
+        ],
+        "kanpurdehat": [
+            "KANPUR DEHAT"
+        ],
+        "kanshiramnagar": [
+            "KANSHIRAM NAGAR"
+        ],
+        "kapurthala": [
+            "KAPURTHALA"
+        ],
+        "karnal": [
+            "KARNAL",
+            "Karnal"
+        ],
+        "karur": [
+            "KARUR",
+            "Karur"
+        ],
+        "katni": [
+            "KATNI"
+        ],
+        "kaushambi": [
+            "KAUSHAMBI"
+        ],
+        "kendrapara": [
+            "KENDRAPARA"
+        ],
+        "kheri": [
+            "KHERI"
+        ],
+        "kolhapur": [
+            "KOLHAPUR"
+        ],
+        "kotagiri": [
+            "KOTAGIRI"
+        ],
+        "krishnagiri": [
+            "KRISHNAGIRI"
+        ],
+        "kurkshetra": [
+            "KURKSHETRA",
+            "Kurkshetra"
+        ],
+        "kushinagar": [
+            "KUSHI NAGAR"
+        ],
+        "kalaburagi": [
+            "Kalaburagi"
+        ],
+        "kathua": [
+            "Kathua"
+        ],
+        "keonjhar": [
+            "Keonjhar",
+            "KEONJHAR"
+        ],
+        "kolkata": [
+            "Kolkata"
+        ],
+        "koppal": [
+            "Koppal"
+        ],
+        "lalitpur": [
+            "LALITPUR",
+            "Lalitpur"
+        ],
+        "lateri": [
+            "LATERI"
+        ],
+        "latur": [
+            "LATUR"
+        ],
+        "lucknow": [
+            "LUCKNOW"
+        ],
+        "ludhiana": [
+            "LUDHIANA",
+            "Ludhiana"
+        ],
+        "madurai": [
+            "MADURAI"
+        ],
+        "maharahganj": [
+            "MAHARAHGANJ"
+        ],
+        "mahendragarh": [
+            "MAHENDRA GARH",
+            "Mahendra Garh"
+        ],
+        "mahoba": [
+            "MAHOBA"
+        ],
+        "mainpuri": [
+            "MAINPURI"
+        ],
+        "maldah": [
+            "MALDAH"
+        ],
+        "mandla": [
+            "MANDLA"
+        ],
+        "mandsaur": [
+            "MANDSAUR"
+        ],
+        "mansa": [
+            "MANSA"
+        ],
+        "mathura": [
+            "MATHURA"
+        ],
+        "mau": [
+            "MAU"
+        ],
+        "mayiladuthurai": [
+            "MAYILADUTHURAI"
+        ],
+        "meerut": [
+            "MEERUT"
+        ],
+        "mewat": [
+            "MEWAT"
+        ],
+        "minjur": [
+            "MINJUR"
+        ],
+        "mirzapur": [
+            "MIRZAPUR"
+        ],
+        "moga": [
+            "MOGA"
+        ],
+        "moradabad": [
+            "MORADABAD"
+        ],
+        "morena": [
+            "MORENA"
+        ],
+        "muktsar": [
+            "MUKTSAR"
+        ],
+        "murshidabad": [
+            "MURSHIDABAD"
+        ],
+        "muzaffarnagar": [
+            "MUZAFFARNAGAR"
+        ],
+        "maharajganj": [
+            "Maharajganj"
+        ],
+        "mandya": [
+            "Mandya"
+        ],
+        "maujali": [
+            "Maujali"
+        ],
+        "maullipur": [
+            "Maullipur"
+        ],
+        "mohali": [
+            "Mohali"
+        ],
+        "mojalipur": [
+            "Mojalipur"
+        ],
+        "mysore": [
+            "Mysore"
+        ],
+        "mysuru": [
+            "Mysuru"
+        ],
+        "n/a": [
+            "N/A"
+        ],
+        "nadia": [
+            "NADIA"
+        ],
+        "nagapattinam": [
+            "NAGAPATTINAM"
+        ],
+        "nagpur": [
+            "NAGPUR"
+        ],
+        "namakkal": [
+            "NAMAKKAL"
+        ],
+        "nanded": [
+            "NANDED"
+        ],
+        "nandurbar": [
+            "NANDURBAR"
+        ],
+        "narsimpur": [
+            "NARSIMPUR"
+        ],
+        "nasik": [
+            "NASIK"
+        ],
+        "neemuch": [
+            "NEEMUCH"
+        ],
+        "north24parganas": [
+            "NORTH 24 PARGANAS",
+            "North 24 Parganas"
+        ],
+        "newdelhi": [
+            "New Delhi"
+        ],
+        "northdinajpur": [
+            "North DINAJPUR"
+        ],
+        "notspecified": [
+            "Not specified"
+        ],
+        "orattanadu": [
+            "ORATTANADU"
+        ],
+        "osmanabad": [
+            "OSMANABAD"
+        ],
+        "palera": [
+            "PALERA"
+        ],
+        "palwal": [
+            "PALWAL",
+            "Palwal"
+        ],
+        "panchkula": [
+            "PANCHKULA",
+            "Panchkula"
+        ],
+        "panipat": [
+            "PANIPAT",
+            "Panipat"
+        ],
+        "panna": [
+            "PANNA"
+        ],
+        "papanasam": [
+            "PAPANASAM"
+        ],
+        "pappakudi": [
+            "PAPPAKUDI"
+        ],
+        "parbhani": [
+            "PARBHANI"
+        ],
+        "pathankot": [
+            "PATHANKOT"
+        ],
+        "patiala": [
+            "PATIALA",
+            "Patiala"
+        ],
+        "pattukkottai": [
+            "PATTUKKOTTAI"
+        ],
+        "perambalur": [
+            "PERAMBALUR"
+        ],
+        "pilibhit": [
+            "PILIBHIT"
+        ],
+        "pratapgarh": [
+            "PRATAPGARH"
+        ],
+        "pudukkottai": [
+            "PUDUKKOTTAI"
+        ],
+        "pune": [
+            "PUNE"
+        ],
+        "purulia": [
+            "PURULIA"
+        ],
+        "punjab": [
+            "Punjab"
+        ],
+        "raebareli": [
+            "RAEBARELI"
+        ],
+        "raisen": [
+            "RAISEN"
+        ],
+        "rajgarh": [
+            "RAJGARH"
+        ],
+        "ramanathapuram": [
+            "RAMANATHAPURAM"
+        ],
+        "rampur": [
+            "RAMPUR"
+        ],
+        "ranipet": [
+            "RANIPET"
+        ],
+        "ratlam": [
+            "RATLAM"
+        ],
+        "rewa": [
+            "REWA"
+        ],
+        "rewari": [
+            "REWARI",
+            "Rewari"
+        ],
+        "rohtak": [
+            "ROHTAK",
+            "Rohtak"
+        ],
+        "rupnagar": [
+            "RUPNAGAR",
+            "Rupnagar"
+        ],
+        "rohtas": [
+            "Rohtas",
+            "ROHTAS"
+        ],
+        "roopdar": [
+            "Roopdar"
+        ],
+        "roopnagar": [
+            "Roopnagar"
+        ],
+        "ropar": [
+            "Ropar"
+        ],
+        "rourkela": [
+            "Rourkela"
+        ],
+        "sagar": [
+            "SAGAR"
+        ],
+        "saharanpur": [
+            "SAHARANPUR"
+        ],
+        "sahibzadaajitsinghnagar": [
+            "SAHIBZADA AJIT SINGH NAGAR"
+        ],
+        "salem": [
+            "SALEM"
+        ],
+        "sambal(bhimnagar)": [
+            "SAMBAL (BHIM NAGAR)"
+        ],
+        "sambalbhimnagar": [
+            "SAMBAL BHIM NAGAR"
+        ],
+        "sambalpur": [
+            "SAMBALPUR"
+        ],
+        "sangli": [
+            "SANGLI"
+        ],
+        "sangrur": [
+            "SANGRUR"
+        ],
+        "santkabirnagar": [
+            "SANT KABIR NAGAR"
+        ],
+        "santravidasnagarbhadohi": [
+            "SANT RAVIDAS NAGAR BHADOHI"
+        ],
+        "satna": [
+            "SATNA"
+        ],
+        "sehore": [
+            "SEHORE"
+        ],
+        "seoni": [
+            "SEONI"
+        ],
+        "shahdol": [
+            "SHAHDOL"
+        ],
+        "shahidbhagatsinghnagar(nawanshahr)": [
+            "SHAHID BHAGAT SINGH NAGAR (Nawanshahr)"
+        ],
+        "shahidbhagatsinghnagarnawanshahr": [
+            "SHAHID BHAGAT SINGH NAGAR Nawanshahr"
+        ],
+        "shahjahanpur": [
+            "SHAHJAHANPUR"
+        ],
+        "shajapur": [
+            "SHAJAPUR"
+        ],
+        "shamli(prabudhnager)": [
+            "SHAMLI (PRABUDH NAGER)"
+        ],
+        "shamliprabudhnager": [
+            "SHAMLI PRABUDH NAGER"
+        ],
+        "sheopurkala": [
+            "SHEOPUR KALA"
+        ],
+        "shivasti": [
+            "SHIVASTI"
+        ],
+        "shivpuri": [
+            "SHIVPURI"
+        ],
+        "siddharthnagar": [
+            "SIDDHARTH NAGAR"
+        ],
+        "sidhi": [
+            "SIDHI"
+        ],
+        "singrauli": [
+            "SINGRAULI"
+        ],
+        "sirsa": [
+            "SIRSA",
+            "Sirsa"
+        ],
+        "sitapur": [
+            "SITAPUR"
+        ],
+        "sivaganga": [
+            "SIVAGANGA"
+        ],
+        "solapur": [
+            "SOLAPUR"
+        ],
+        "sonbhadra": [
+            "SONBHADRA"
+        ],
+        "sonepat": [
+            "SONEPAT",
+            "Sonepat"
+        ],
+        "south24parganas": [
+            "SOUTH 24 PARGANAS"
+        ],
+        "sultanpur": [
+            "SULTANPUR"
+        ],
+        "sundargarh": [
+            "SUNDARGARH"
+        ],
+        "saran": [
+            "Saran",
+            "SARAN"
+        ],
+        "siliguri": [
+            "Siliguri"
+        ],
+        "southdinajpur": [
+            "South DINAJPUR"
+        ],
+        "tarntaran": [
+            "TARN TARAN"
+        ],
+        "tenkasi": [
+            "TENKASI"
+        ],
+        "thanjavur": [
+            "THANJAVUR"
+        ],
+        "theni": [
+            "THENI"
+        ],
+        "thiruppanandal": [
+            "THIRUPPANANDAL"
+        ],
+        "thiruvallur": [
+            "THIRUVALLUR"
+        ],
+        "thiruvarur": [
+            "THIRUVARUR"
+        ],
+        "thiruvattar": [
+            "THIRUVATTAR"
+        ],
+        "thoothukudi": [
+            "THOOTHUKUDI"
+        ],
+        "tikamgarh": [
+            "TIKAMGARH"
+        ],
+        "tiruchirappalli": [
+            "TIRUCHIRAPPALLI"
+        ],
+        "tirunelveli": [
+            "TIRUNELVELI"
+        ],
+        "tirupattur": [
+            "TIRUPATTUR"
+        ],
+        "tirupur": [
+            "TIRUPUR"
+        ],
+        "tiruttani": [
+            "TIRUTTANI"
+        ],
+        "tiruvadanai": [
+            "TIRUVADANAI"
+        ],
+        "tiruvallur": [
+            "TIRUVALLUR"
+        ],
+        "tiruvannamalai": [
+            "TIRUVANNAMALAI"
+        ],
+        "tiruvidaimarudur": [
+            "TIRUVIDAIMARUDUR"
+        ],
+        "tkallupatti": [
+            "TKALLUPATTI"
+        ],
+        "ujjain": [
+            "UJJAIN"
+        ],
+        "umaria": [
+            "UMARIA"
+        ],
+        "unnao": [
+            "UNNAO"
+        ],
+        "unknown": [
+            "Unknown",
+            "unknown"
+        ],
+        "varanasi": [
+            "VARANASI",
+            "Varanasi"
+        ],
+        "vasudevanallur": [
+            "VASUDEVANALLUR"
+        ],
+        "vellore": [
+            "VELLORE"
+        ],
+        "vidisha": [
+            "VIDISHA"
+        ],
+        "villivakkam": [
+            "VILLIVAKKAM"
+        ],
+        "villuppuram": [
+            "VILLUPPURAM"
+        ],
+        "virudhunagar": [
+            "VIRUDHUNAGAR"
+        ],
+        "washim": [
+            "WASHIM"
+        ],
+        "westmedinipur": [
+            "WEST MEDINIPUR"
+        ],
+        "westnimar": [
+            "WEST NIMAR"
+        ],
+        "yamunanagar": [
+            "YAMUNA NAGAR",
+            "Yamuna Nagar"
+        ],
+        "yevatmal": [
+            "YEVATMAL"
+        ],
+        "\u0a1c\u0a32\u0a70\u0a27\u0a30": [
+            "\u0a1c\u0a32\u0a70\u0a27\u0a30"
+        ],
+        "alappuzha": [
+            "ALAPPUZHA"
+        ],
+        "anantpur": [
+            "ANANTPUR"
+        ],
+        "anjaw": [
+            "ANJAW"
+        ],
+        "araria": [
+            "ARARIA"
+        ],
+        "arwal": [
+            "ARWAL"
+        ],
+        "baksa": [
+            "BAKSA"
+        ],
+        "balangir": [
+            "BALANGIR"
+        ],
+        "balasore": [
+            "BALASORE"
+        ],
+        "banka": [
+            "BANKA"
+        ],
+        "barpeta": [
+            "BARPETA"
+        ],
+        "bastar": [
+            "BASTAR"
+        ],
+        "baudh": [
+            "BAUDH"
+        ],
+        "begusarai": [
+            "BEGUSARAI"
+        ],
+        "bhadradrikothagudem": [
+            "BHADRADRI KOTHAGUDEM"
+        ],
+        "bhagalpur": [
+            "BHAGALPUR"
+        ],
+        "bhandara": [
+            "BHANDARA"
+        ],
+        "bhojpur": [
+            "BHOJPUR"
+        ],
+        "bilaspur": [
+            "BILASPUR"
+        ],
+        "bokaro": [
+            "BOKARO"
+        ],
+        "bongaigaon": [
+            "BONGAIGAON"
+        ],
+        "buxar": [
+            "BUXAR"
+        ],
+        "balod": [
+            "Balod"
+        ],
+        "balodabazar": [
+            "BalodaBazar"
+        ],
+        "bemetara": [
+            "Bemetara"
+        ],
+        "champawat": [
+            "CHAMPAWAT"
+        ],
+        "chandrapur": [
+            "CHANDRAPUR"
+        ],
+        "changlang": [
+            "CHANGLANG"
+        ],
+        "chatra": [
+            "CHATRA"
+        ],
+        "chittoor": [
+            "CHITTOOR"
+        ],
+        "dakshinbastardantewada": [
+            "DAKSHIN BASTAR DANTEWADA"
+        ],
+        "darbhanga": [
+            "DARBHANGA"
+        ],
+        "darrang": [
+            "DARRANG"
+        ],
+        "debagarh": [
+            "DEBAGARH"
+        ],
+        "dehradun": [
+            "DEHRADUN"
+        ],
+        "deoghar": [
+            "DEOGHAR"
+        ],
+        "dhamtari": [
+            "DHAMTARI"
+        ],
+        "dhanbad": [
+            "DHANBAD"
+        ],
+        "dhemaji": [
+            "DHEMAJI"
+        ],
+        "dhenkanal": [
+            "DHENKANAL"
+        ],
+        "dhubri": [
+            "DHUBRI"
+        ],
+        "dibrugarh": [
+            "DIBRUGARH"
+        ],
+        "dumka": [
+            "DUMKA"
+        ],
+        "durg": [
+            "DURG"
+        ],
+        "eastgodavari": [
+            "EAST GODAVARI"
+        ],
+        "eastkameng": [
+            "EAST KAMENG"
+        ],
+        "eastsiang": [
+            "EAST SIANG"
+        ],
+        "eastsinghbhum": [
+            "EAST SINGHBHUM"
+        ],
+        "ernakulam": [
+            "ERNAKULAM"
+        ],
+        "gadchiroli": [
+            "GADCHIROLI"
+        ],
+        "garhwa": [
+            "GARHWA"
+        ],
+        "gaya": [
+            "GAYA"
+        ],
+        "giridih": [
+            "GIRIDIH"
+        ],
+        "goalpara": [
+            "GOALPARA"
+        ],
+        "godda": [
+            "GODDA"
+        ],
+        "golaghat": [
+            "GOLAGHAT"
+        ],
+        "gondiya": [
+            "GONDIYA"
+        ],
+        "gopalganj": [
+            "GOPALGANJ"
+        ],
+        "gumla": [
+            "GUMLA"
+        ],
+        "guntur": [
+            "GUNTUR"
+        ],
+        "gariyaband": [
+            "Gariyaband"
+        ],
+        "hazaribagh": [
+            "HAZARIBAGH"
+        ],
+        "jagatsinghapur": [
+            "JAGATSINGHAPUR"
+        ],
+        "jagtial": [
+            "JAGTIAL"
+        ],
+        "jamtara": [
+            "JAMTARA"
+        ],
+        "jamui": [
+            "JAMUI"
+        ],
+        "jangaon": [
+            "JANGAON"
+        ],
+        "janjgir-champa": [
+            "JANJGIR-CHAMPA"
+        ],
+        "jashpur": [
+            "JASHPUR"
+        ],
+        "jayashankarbhupalapally": [
+            "JAYASHANKAR BHUPALAPALLY"
+        ],
+        "jehanabad": [
+            "JEHANABAD"
+        ],
+        "jhabua": [
+            "JHABUA"
+        ],
+        "jogulambagadwal": [
+            "JOGULAMBA GADWAL"
+        ],
+        "jorhat": [
+            "JORHAT"
+        ],
+        "kabeerdham": [
+            "KABEERDHAM"
+        ],
+        "kaimur": [
+            "KAIMUR"
+        ],
+        "kamareddy": [
+            "KAMAREDDY"
+        ],
+        "kamrup": [
+            "KAMRUP"
+        ],
+        "kangra": [
+            "KANGRA"
+        ],
+        "kannur": [
+            "KANNUR"
+        ],
+        "karaikal": [
+            "KARAIKAL"
+        ],
+        "karbi-anglong": [
+            "KARBI-ANGLONG"
+        ],
+        "karimganj": [
+            "KARIMGANJ"
+        ],
+        "kasargod": [
+            "KASARGOD"
+        ],
+        "katihar": [
+            "KATIHAR"
+        ],
+        "khagaria": [
+            "KHAGARIA"
+        ],
+        "khordha": [
+            "KHORDHA"
+        ],
+        "kishanganj": [
+            "KISHANGANJ"
+        ],
+        "kodarma": [
+            "KODARMA"
+        ],
+        "kokrajhar": [
+            "KOKRAJHAR"
+        ],
+        "kollam": [
+            "KOLLAM"
+        ],
+        "koraput": [
+            "KORAPUT"
+        ],
+        "korba": [
+            "KORBA"
+        ],
+        "koriya": [
+            "KORIYA"
+        ],
+        "kottayam": [
+            "KOTTAYAM"
+        ],
+        "kozhikode": [
+            "KOZHIKODE"
+        ],
+        "krishna": [
+            "KRISHNA"
+        ],
+        "kumarambheemasifabad": [
+            "KUMARAMBHEEM ASIFABAD"
+        ],
+        "kurnool": [
+            "KURNOOL"
+        ],
+        "kurungkumey": [
+            "KURUNG KUMEY"
+        ],
+        "kondagaon": [
+            "Kondagaon"
+        ],
+        "lakhimpur": [
+            "LAKHIMPUR"
+        ],
+        "lakhisaria": [
+            "LAKHISARIA"
+        ],
+        "lohit": [
+            "LOHIT"
+        ],
+        "longding": [
+            "LONGDING"
+        ],
+        "lowerdibangvalley": [
+            "LOWER DIBANG VALLEY"
+        ],
+        "lowersubabsiri": [
+            "LOWER SUBABSIRI"
+        ],
+        "madhepura": [
+            "MADHEPURA"
+        ],
+        "madhubani": [
+            "MADHUBANI"
+        ],
+        "mahabubabad": [
+            "MAHABUBABAD"
+        ],
+        "mahasamund": [
+            "MAHASAMUND"
+        ],
+        "malappuram": [
+            "MALAPPURAM"
+        ],
+        "malkangiri": [
+            "MALKANGIRI"
+        ],
+        "mancherial": [
+            "MANCHERIAL"
+        ],
+        "mandi": [
+            "MANDI"
+        ],
+        "marigoan": [
+            "MARIGOAN"
+        ],
+        "mayurbhanj": [
+            "MAYURBHANJ"
+        ],
+        "medchalmalkajgiri": [
+            "MEDCHALMALKAJGIRI"
+        ],
+        "muzaffarpur": [
+            "MUZAFFARPUR"
+        ],
+        "mungeli": [
+            "Mungeli"
+        ],
+        "nagaon": [
+            "NAGAON"
+        ],
+        "nagarkurnool": [
+            "NAGARKURNOOL"
+        ],
+        "nainital": [
+            "NAINITAL"
+        ],
+        "nalanda": [
+            "NALANDA"
+        ],
+        "nalbari": [
+            "NALBARI"
+        ],
+        "nawadha": [
+            "NAWADHA"
+        ],
+        "nawapara": [
+            "NAWAPARA"
+        ],
+        "naworangpur": [
+            "NAWORANGPUR"
+        ],
+        "nayagarh": [
+            "NAYAGARH"
+        ],
+        "nellore": [
+            "NELLORE"
+        ],
+        "nirmal": [
+            "NIRMAL"
+        ],
+        "palakkad": [
+            "PALAKKAD"
+        ],
+        "palamu": [
+            "PALAMU"
+        ],
+        "palghar": [
+            "PALGHAR"
+        ],
+        "papumpare": [
+            "PAPUMPARE"
+        ],
+        "pashchimchamparan": [
+            "PASHCHIM CHAMPARAN"
+        ],
+        "patna": [
+            "PATNA"
+        ],
+        "peddapalli": [
+            "PEDDAPALLI"
+        ],
+        "prakasam": [
+            "PRAKASAM"
+        ],
+        "puducherry": [
+            "PUDUCHERRY"
+        ],
+        "puri": [
+            "PURI"
+        ],
+        "purnea": [
+            "PURNEA"
+        ],
+        "raigarh": [
+            "RAIGARH"
+        ],
+        "raipur": [
+            "RAIPUR"
+        ],
+        "rajnandgaon": [
+            "RAJ NANDGAON"
+        ],
+        "rajannasircilla": [
+            "RAJANNA SIRCILLA"
+        ],
+        "ramgarh": [
+            "RAMGARH"
+        ],
+        "ranchi": [
+            "RANCHI"
+        ],
+        "ratnagiri": [
+            "RATNAGIRI"
+        ],
+        "saharsa": [
+            "SAHARSA"
+        ],
+        "samastipur": [
+            "SAMASTIPUR"
+        ],
+        "sangareddy": [
+            "SANGAREDDY"
+        ],
+        "satara": [
+            "SATARA"
+        ],
+        "seraikela": [
+            "SERAIKELA"
+        ],
+        "sheohar": [
+            "SHEOHAR"
+        ],
+        "siddipet": [
+            "SIDDIPET"
+        ],
+        "sindhudurg": [
+            "SINDHUDURG"
+        ],
+        "sitamarhi": [
+            "SITAMARHI"
+        ],
+        "sivasagar": [
+            "SIVASAGAR"
+        ],
+        "siwan": [
+            "SIWAN"
+        ],
+        "solan": [
+            "SOLAN"
+        ],
+        "sonepur": [
+            "SONEPUR"
+        ],
+        "sonitpur": [
+            "SONITPUR"
+        ],
+        "srikakulam": [
+            "SRIKAKULAM"
+        ],
+        "supaul": [
+            "SUPAUL"
+        ],
+        "surguja": [
+            "SURGUJA"
+        ],
+        "suryapet": [
+            "SURYAPET"
+        ],
+        "sonipat": [
+            "Sonipat"
+        ],
+        "surajpur": [
+            "Surajpur"
+        ],
+        "tawang": [
+            "TAWANG"
+        ],
+        "thane": [
+            "THANE"
+        ],
+        "thrissur": [
+            "THRISSUR"
+        ],
+        "tinsukia": [
+            "TINSUKIA"
+        ],
+        "tirap": [
+            "TIRAP"
+        ],
+        "trivandrum": [
+            "TRIVANDRUM"
+        ],
+        "udalguri": [
+            "UDALGURI"
+        ],
+        "udhamsinghnagar": [
+            "UDHAM SINGH NAGAR"
+        ],
+        "una": [
+            "UNA"
+        ],
+        "upperdibangvalley": [
+            "UPPER DIBANG VALLEY"
+        ],
+        "uppersiang": [
+            "UPPER SIANG"
+        ],
+        "uttarbastarkanker": [
+            "UTTAR BASTAR KANKER"
+        ],
+        "vaishali": [
+            "VAISHALI"
+        ],
+        "vikarabad": [
+            "VIKARABAD"
+        ],
+        "visakhapatnam": [
+            "VISAKHAPATNAM"
+        ],
+        "vizianagarm": [
+            "VIZIANAGARM"
+        ],
+        "wanaparthy": [
+            "WANAPARTHY"
+        ],
+        "warangalrural": [
+            "WARANGAL RURAL"
+        ],
+        "wardha": [
+            "WARDHA"
+        ],
+        "wayanad": [
+            "WAYANAD"
+        ],
+        "westgodavari": [
+            "WEST GODAVARI"
+        ],
+        "westkameng": [
+            "WEST KAMENG"
+        ],
+        "westsiang": [
+            "WEST SIANG"
+        ],
+        "ysr": [
+            "Y S R"
+        ],
+        "yadadribhuvanagiri": [
+            "YADADRI BHUVANAGIRI"
+        ]
+    },
+    "domains": {
+        "agriculturalstatistics": [
+            "Agricultural Statistics"
+        ],
+        "agricultureextensionservices": [
+            "Agriculture Extension Services"
+        ],
+        "agriculturemechanization": [
+            "Agriculture Mechanization"
+        ],
+        "agronomy": [
+            "Agronomy"
+        ],
+        "animalhealth": [
+            "Animal Health"
+        ],
+        "animalhusbandry": [
+            "Animal Husbandry"
+        ],
+        "animalhusbandry-dairymanagement": [
+            "Animal Husbandry - Dairy Management"
+        ],
+        "animalhusbandry-reproductivehealth": [
+            "Animal Husbandry - Reproductive Health"
+        ],
+        "bio-pesticidesandbio-fertilizers": [
+            "Bio-Pesticides and Bio-Fertilizers"
+        ],
+        "climate": [
+            "Climate"
+        ],
+        "climateimpactonflowering": [
+            "Climate Impact on Flowering"
+        ],
+        "climateandgrowingconditions": [
+            "Climate and Growing Conditions"
+        ],
+        "credit": [
+            "Credit"
+        ],
+        "cropcultivation": [
+            "Crop Cultivation"
+        ],
+        "cropeconomicsandcultivationpractices": [
+            "Crop Economics and Cultivation Practices"
+        ],
+        "cropeconomicsandprofitability": [
+            "Crop Economics and Profitability"
+        ],
+        "cropgrowthissue": [
+            "Crop Growth Issue"
+        ],
+        "cropharvesting": [
+            "Crop Harvesting"
+        ],
+        "crophealthandnutrientmanagement": [
+            "Crop Health and Nutrient Management"
+        ],
+        "cropinformation": [
+            "Crop Information"
+        ],
+        "cropinsurance": [
+            "Crop Insurance"
+        ],
+        "cropmanagement": [
+            "Crop Management"
+        ],
+        "cropmanagement-planthealth": [
+            "Crop Management - Plant Health"
+        ],
+        "cropmanagement-seedgerminationissue": [
+            "Crop Management - Seed germination issue"
+        ],
+        "cropmanagement-waterlogging": [
+            "Crop Management - Waterlogging"
+        ],
+        "cropmanagement-waterloggingdamage": [
+            "Crop Management - Waterlogging Damage"
+        ],
+        "cropmanagementandmarketinformation": [
+            "Crop Management and Market Information"
+        ],
+        "cropplanning": [
+            "Crop Planning"
+        ],
+        "croppractices": [
+            "Crop Practices"
+        ],
+        "cropproduction": [
+            "Crop Production"
+        ],
+        "cropprotection": [
+            "Crop Protection"
+        ],
+        "cropprotection-aphidmanagement": [
+            "Crop Protection - Aphid Management"
+        ],
+        "cropprotection-diseasemanagement": [
+            "Crop Protection - Disease Management"
+        ],
+        "cropprotection-diseasemanagement-yellowrust": [
+            "Crop Protection - Disease Management - Yellow Rust"
+        ],
+        "cropprotection-diseaseprevention-rust": [
+            "Crop Protection - Disease Prevention - Rust"
+        ],
+        "cropprotection-pestmanagement": [
+            "Crop Protection - Pest Management"
+        ],
+        "cropprotection-pestmanagement-aphids": [
+            "Crop Protection - Pest Management - Aphids"
+        ],
+        "cropprotection-pestanddiseasemanagementinnursery": [
+            "Crop Protection - Pest and Disease Management in Nursery"
+        ],
+        "cropprotection-pesticideregulations": [
+            "Crop Protection - Pesticide Regulations"
+        ],
+        "cropprotectionandsoilhealth": [
+            "Crop Protection and Soil Health"
+        ],
+        "cropresiduemanagement": [
+            "Crop Residue Management"
+        ],
+        "cropselection": [
+            "Crop Selection"
+        ],
+        "cropselectionandjustification": [
+            "Crop Selection and Justification"
+        ],
+        "cropselectionandmarketprices": [
+            "Crop Selection and Market Prices"
+        ],
+        "cropselectionformandyadistrict": [
+            "Crop Selection for Mandya district"
+        ],
+        "cropvarieties": [
+            "Crop Varieties"
+        ],
+        "cropvariety": [
+            "Crop Variety"
+        ],
+        "cropvarietyinformation": [
+            "Crop Variety Information"
+        ],
+        "cropvarietyselection": [
+            "Crop Variety Selection"
+        ],
+        "cropcultivationandvarietyselection": [
+            "Crop cultivation and variety selection"
+        ],
+        "cropstressmanagement-waterloggingandyellowing": [
+            "Crop stress management - waterlogging and yellowing"
+        ],
+        "culturalpractices": [
+            "Cultural Practices"
+        ],
+        "culturalpracticesandabioticstress": [
+            "Cultural Practices and Abiotic Stress"
+        ],
+        "databasequery": [
+            "Database Query"
+        ],
+        "disease": [
+            "Disease"
+        ],
+        "diseasemanagement": [
+            "Disease Management"
+        ],
+        "diseasemanagement-fungal": [
+            "Disease Management - Fungal"
+        ],
+        "diseaseandnutrientmanagement": [
+            "Disease and Nutrient Management"
+        ],
+        "diseasemanagement-redrot": [
+            "Disease management - red rot"
+        ],
+        "diseasemanagement-yellowrust": [
+            "Disease management - yellow rust"
+        ],
+        "error": [
+            "ERROR"
+        ],
+        "faqvideoqueriesanalysis": [
+            "FAQ Video Queries Analysis"
+        ],
+        "faqvideosrequest": [
+            "FAQ Videos Request"
+        ],
+        "fertilizermanagement": [
+            "Fertilizer Management"
+        ],
+        "fertilizeruseandavailability": [
+            "Fertilizer Use and Availability"
+        ],
+        "fertilizerandmanagement": [
+            "Fertilizer and Management"
+        ],
+        "fertilizerandnutrient": [
+            "Fertilizer and Nutrient"
+        ],
+        "fieldpreparation": [
+            "Field Preparation"
+        ],
+        "general": [
+            "General"
+        ],
+        "generalagriculturalquery": [
+            "General Agricultural Query"
+        ],
+        "generalcropinformation": [
+            "General Crop Information"
+        ],
+        "generalcropmanagement": [
+            "General Crop Management"
+        ],
+        "generalcultivation": [
+            "General Cultivation"
+        ],
+        "generalmanagement": [
+            "General Management"
+        ],
+        "governmentschemes": [
+            "Government Schemes"
+        ],
+        "irrelevant_crop": [
+            "IRRELEVANT_CROP"
+        ],
+        "insuranceschemes": [
+            "Insurance Schemes"
+        ],
+        "irrigationmanagement": [
+            "Irrigation Management"
+        ],
+        "marketadvisory": [
+            "Market Advisory"
+        ],
+        "marketdata": [
+            "Market Data"
+        ],
+        "marketinformation": [
+            "Market Information"
+        ],
+        "marketprice": [
+            "Market Price"
+        ],
+        "marketprices": [
+            "Market Prices"
+        ],
+        "marketandpriceinformation": [
+            "Market and Price Information"
+        ],
+        "micronutrientmanagementanddeficiencycorrection": [
+            "Micronutrient management and deficiency correction"
+        ],
+        "monkeydamageandcropprotection": [
+            "Monkey damage and crop protection"
+        ],
+        "n/a": [
+            "N/A"
+        ],
+        "notspecified": [
+            "Not specified"
+        ],
+        "nutrientmanagement": [
+            "Nutrient Management"
+        ],
+        "nutrientmanagement-growthenhancement": [
+            "Nutrient Management - Growth Enhancement"
+        ],
+        "nutrientmanagementandcrophealth": [
+            "Nutrient Management and Crop Health"
+        ],
+        "nutrientmanagement/diseasemanagement": [
+            "Nutrient Management/Disease Management"
+        ],
+        "organiccropprotection": [
+            "Organic Crop Protection"
+        ],
+        "organicfarming": [
+            "Organic Farming"
+        ],
+        "organicfarming-weedmanagement": [
+            "Organic Farming - Weed Management"
+        ],
+        "organicfertilizer": [
+            "Organic Fertilizer"
+        ],
+        "other": [
+            "Other"
+        ],
+        "pest": [
+            "Pest"
+        ],
+        "pestidentification": [
+            "Pest Identification"
+        ],
+        "pestmanagement": [
+            "Pest Management"
+        ],
+        "pestmanagement-aphids": [
+            "Pest Management - Aphids"
+        ],
+        "pestmanagement-beneficialinsects": [
+            "Pest Management - Beneficial Insects"
+        ],
+        "pestmanagement-resistantaphids": [
+            "Pest Management - Resistant Aphids"
+        ],
+        "pestmanagement-rodents": [
+            "Pest Management - Rodents"
+        ],
+        "pestanddiseasemanagement": [
+            "Pest and Disease Management"
+        ],
+        "pest/diseasemanagement": [
+            "Pest/Disease Management"
+        ],
+        "pesticideregulations": [
+            "Pesticide Regulations"
+        ],
+        "pesticides": [
+            "Pesticides"
+        ],
+        "plantprotection": [
+            "Plant Protection"
+        ],
+        "postharvestmanagement": [
+            "Post Harvest Management"
+        ],
+        "postharvestmanagementcleaninggradingpackagingfoodprocessingcoolchainetc": [
+            "Post Harvest Management Cleaning Grading Packaging Food Processing Cool Chain etc"
+        ],
+        "postharvestpreservation": [
+            "Post Harvest Preservation"
+        ],
+        "procurementcentercontactinformation": [
+            "Procurement Center Contact Information"
+        ],
+        "rodentpestmanagement": [
+            "Rodent pest management"
+        ],
+        "seeddistributionandsupply": [
+            "Seed Distribution and Supply"
+        ],
+        "seedqualitytesting": [
+            "Seed Quality Testing"
+        ],
+        "seeds": [
+            "Seeds"
+        ],
+        "seedsandplantingmaterial": [
+            "Seeds and Planting Material"
+        ],
+        "soilhealthcard": [
+            "Soil Health Card"
+        ],
+        "soilmanagementandcropselection": [
+            "Soil Management and Crop Selection"
+        ],
+        "soilmanagementandcultivation": [
+            "Soil Management and Cultivation"
+        ],
+        "soiltesting": [
+            "Soil Testing"
+        ],
+        "sowingtimeandweather": [
+            "Sowing Time and Weather"
+        ],
+        "storage": [
+            "Storage"
+        ],
+        "systeminformation": [
+            "System Information"
+        ],
+        "testingfunctioncalls": [
+            "Testing function calls"
+        ],
+        "trainingandexposurevisits": [
+            "Training and Exposure Visits"
+        ],
+        "treediseasemanagement": [
+            "Tree Disease Management"
+        ],
+        "treemanagement": [
+            "Tree Management"
+        ],
+        "varieties": [
+            "Varieties"
+        ],
+        "variety": [
+            "Variety"
+        ],
+        "varietyidentification": [
+            "Variety Identification"
+        ],
+        "varietyinformation": [
+            "Variety Information"
+        ],
+        "varietyselection": [
+            "Variety Selection"
+        ],
+        "varietyselectionandcultivation": [
+            "Variety selection and cultivation"
+        ],
+        "watermanagement": [
+            "Water Management"
+        ],
+        "watermanagementmicroirrigation": [
+            "Water Management Micro Irrigation"
+        ],
+        "waterqualityandsoilhealth": [
+            "Water Quality and Soil Health"
+        ],
+        "weather": [
+            "Weather"
+        ],
+        "weatheradvisory": [
+            "Weather Advisory"
+        ],
+        "weatherforecast": [
+            "Weather Forecast"
+        ],
+        "weatherforecast-hourly": [
+            "Weather Forecast - Hourly"
+        ],
+        "weatherforecast-rainfall": [
+            "Weather Forecast - Rainfall"
+        ],
+        "weatherforecast-rainfallprediction": [
+            "Weather Forecast - Rainfall Prediction"
+        ],
+        "weatherinformation": [
+            "Weather Information"
+        ],
+        "weatherandharvestplanning": [
+            "Weather and Harvest Planning"
+        ],
+        "weatherandirrigation": [
+            "Weather and Irrigation"
+        ],
+        "weedmanagement": [
+            "Weed Management"
+        ],
+        "weedmanagementandcropprotection": [
+            "Weed Management and Crop Protection"
+        ],
+        "wildlifemanagement": [
+            "Wildlife Management"
+        ],
+        "wildlife/pestmanagement": [
+            "Wildlife/Pest Management"
+        ],
+        "yellowrustfungiciderecommendation": [
+            "Yellow rust fungicide recommendation"
+        ],
+        "\u0a2c\u0a3f\u0a2e\u0a3e\u0a30\u0a40\u0a2a\u0a4d\u0a30\u0a2c\u0a70\u0a27\u0a28": [
+            "\u0a2c\u0a3f\u0a2e\u0a3e\u0a30\u0a40 \u0a2a\u0a4d\u0a30\u0a2c\u0a70\u0a27\u0a28"
+        ]
+    },
+    "seasons": {
+        "all": [
+            "All",
+            "all"
+        ],
+        "allseason": [
+            "All Season",
+            "All season"
+        ],
+        "allseasons": [
+            "All Seasons",
+            "All seasons"
+        ],
+        "allyear": [
+            "All Year",
+            "All year"
+        ],
+        "annual": [
+            "Annual"
+        ],
+        "current": [
+            "Current"
+        ],
+        "currentyear": [
+            "Current year"
+        ],
+        "general": [
+            "General",
+            "general"
+        ],
+        "jayad": [
+            "JAYAD",
+            "JAYAD ",
+            "Jayad"
+        ],
+        "january": [
+            "January"
+        ],
+        "kharif": [
+            "KHARIF",
+            "Kharif",
+            "KHARIF ",
+            "Kharif ",
+            "kharif",
+            "kharif "
+        ],
+        "kharif/zaid": [
+            "Kharif/Zaid"
+        ],
+        "n/a": [
+            "N/A"
+        ],
+        "notspecified": [
+            "Not specified"
+        ],
+        "perennial": [
+            "Perennial"
+        ],
+        "rabi": [
+            "RABI",
+            "Rabi",
+            "Rabi ",
+            "rabi"
+        ],
+        "rabiandkharif": [
+            "Rabi and Kharif"
+        ],
+        "rabi/kharif": [
+            "Rabi/Kharif",
+            "rabi/ Kharif"
+        ],
+        "spring": [
+            "Spring"
+        ],
+        "spring/autumn": [
+            "Spring/Autumn"
+        ],
+        "summer": [
+            "Summer"
+        ],
+        "unknown": [
+            "Unknown",
+            "unknown"
+        ],
+        "winter": [
+            "Winter"
+        ],
+        "winter(rabi)planting": [
+            "Winter (Rabi) planting"
+        ],
+        "zayad": [
+            "Zayad"
+        ],
+        "\u0a16\u0a30\u0a40\u0a2b": [
+            "\u0a16\u0a30\u0a40\u0a2b"
+        ],
+        "boro": [
+            "Boro"
+        ],
+        "kharif,rabi": [
+            "KHARIF, RABI",
+            "Kharif, Rabi"
+        ],
+        "kharif,rabi,zaid": [
+            "KHARIF, RABI,ZAID",
+            "Kharif,rabi,zaid"
+        ],
+        "kharif/rabi": [
+            "KHARIF/RABI",
+            "Kharif/Rabi"
+        ],
+        "kharif/rabi/jayad": [
+            "KHARIF/RABI/JAYAD"
+        ],
+        "rabi/jayad": [
+            "RABI/JAYAD",
+            "Rabi/Jayad"
+        ],
+        "rabi,kharif,zaid": [
+            "Rabi, Kharif, Zaid"
+        ],
+        "season": [
+            "SEASON",
+            "Season",
+            "Season ",
+            "season",
+            "season "
+        ],
+        "seasons": [
+            "Seasons"
+        ],
+        "zaid": [
+            "ZAID",
+            "Zaid",
+            "Zaid "
+        ]
+    }
+}
