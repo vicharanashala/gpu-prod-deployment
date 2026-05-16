@@ -1,0 +1,14 @@
+# Local: create `voice-services/.env` with at least SARVAM_API_KEY (see main.py Settings).
+services:
+  voice-services:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT:-8080}:8080"
+    env_file:
+      - .env
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "8080"
+    restart: unless-stopped
