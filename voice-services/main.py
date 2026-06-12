@@ -122,6 +122,11 @@ class Settings(BaseSettings):
         default="male",
         validation_alias="DEFAULT_TTS_GENDER",
     )
+    # Sarvam REST TTS per-request char cap. Unset → model default (2500 bulbul:v3, 1500 bulbul:v2).
+    tts_max_chars_per_request: Optional[int] = Field(
+        default=None,
+        validation_alias="TTS_MAX_CHARS_PER_REQUEST",
+    )
 
 
 @lru_cache
@@ -344,7 +349,42 @@ async def _prepare_audio_for_sarvam_stt(
 # --- Sarvam helpers ----------------------------------------------------------------
 
 
-async def _sarvam_tts_rest_mp3_bytes(
+def _sarvam_tts_max_chars(model: str) -> int:
+    """Sarvam REST limits: bulbul:v3 → 2500, bulbul:v2 → 1500."""
+    if "v2" in model.lower():
+        return 1500
+    return 2500
+
+
+def _effective_tts_max_chars(model: str, settings: Settings) -> int:
+    if settings.tts_max_chars_per_request is not None:
+        return settings.tts_max_chars_per_request
+    return _sarvam_tts_max_chars(model)
+
+
+def _chunk_text_for_tts(text: str, max_len: int) -> list[str]:
+    """Split long text at sentence/space boundaries (Sarvam REST char limit)."""
+    chunks: list[str] = []
+    remaining = text.strip()
+    while remaining:
+        if len(remaining) <= max_len:
+            chunks.append(remaining)
+            break
+        break_at = remaining.rfind(".", 0, max_len)
+        if break_at == -1:
+            break_at = remaining.rfind(" ", 0, max_len)
+        if break_at == -1:
+            chunks.append(remaining[:max_len].strip())
+            remaining = remaining[max_len:].strip()
+            continue
+        piece = remaining[: break_at + 1].strip()
+        if piece:
+            chunks.append(piece)
+        remaining = remaining[break_at + 1 :].strip()
+    return chunks
+
+
+async def _sarvam_tts_rest_mp3_single(
     client: AsyncSarvamAI,
     *,
     model: str,
@@ -353,7 +393,7 @@ async def _sarvam_tts_rest_mp3_bytes(
     target_language_code: str,
     pace: float,
 ) -> bytes:
-    """Single POST ``/text-to-speech`` — same contract as Sarvam docs (no WebSocket)."""
+    """Single POST ``/text-to-speech`` — one Sarvam REST call (no chunking)."""
     t0 = time.perf_counter()
     try:
         resp = await client.text_to_speech.convert(
@@ -399,6 +439,52 @@ async def _sarvam_tts_rest_mp3_bytes(
     return out
 
 
+async def _sarvam_tts_rest_mp3_bytes(
+    client: AsyncSarvamAI,
+    *,
+    model: str,
+    text: str,
+    speaker: str,
+    target_language_code: str,
+    pace: float,
+    max_chars: int,
+) -> bytes:
+    """Sarvam REST TTS; splits text when it exceeds ``max_chars`` and concatenates MP3."""
+    text_chunks = _chunk_text_for_tts(text, max_chars)
+    if len(text_chunks) == 1:
+        return await _sarvam_tts_rest_mp3_single(
+            client,
+            model=model,
+            text=text_chunks[0],
+            speaker=speaker,
+            target_language_code=target_language_code,
+            pace=pace,
+        )
+
+    t0 = time.perf_counter()
+    parts: list[bytes] = []
+    for i, chunk in enumerate(text_chunks, start=1):
+        part = await _sarvam_tts_rest_mp3_single(
+            client,
+            model=model,
+            text=chunk,
+            speaker=speaker,
+            target_language_code=target_language_code,
+            pace=pace,
+        )
+        parts.append(part)
+    out = b"".join(parts)
+    logger.info(
+        "TTS Sarvam REST chunked: n_chunks=%d total_chars=%d out_bytes=%d model=%r (%.1f ms)",
+        len(text_chunks),
+        len(text),
+        len(out),
+        model,
+        _elapsed_ms(t0),
+    )
+    return out
+
+
 async def sarvam_tts_bytes(
     client: AsyncSarvamAI,
     *,
@@ -408,6 +494,7 @@ async def sarvam_tts_bytes(
     target_language_code: str,
     pace: float,
     response_format: str,
+    max_chars: int,
 ) -> tuple[bytes, str]:
     if response_format not in ("mp3", "mpeg"):
         raise HTTPException(
@@ -421,6 +508,7 @@ async def sarvam_tts_bytes(
         speaker=speaker,
         target_language_code=target_language_code,
         pace=pace,
+        max_chars=max_chars,
     )
     return audio, "audio/mpeg"
 
@@ -434,21 +522,31 @@ async def sarvam_tts_stream(
     target_language_code: str,
     pace: float,
     response_format: str,
+    max_chars: int,
 ) -> AsyncIterator[bytes]:
     if response_format not in ("mp3", "mpeg"):
         raise HTTPException(
             status_code=400,
             detail="Sarvam TTS currently returns MP3; use response_format=mp3.",
         )
-    audio = await _sarvam_tts_rest_mp3_bytes(
-        client,
-        model=model,
-        text=text,
-        speaker=speaker,
-        target_language_code=target_language_code,
-        pace=pace,
-    )
-    yield audio
+    text_chunks = _chunk_text_for_tts(text, max_chars)
+    if len(text_chunks) > 1:
+        logger.info(
+            "TTS Sarvam stream chunked: n_chunks=%d total_chars=%d model=%r",
+            len(text_chunks),
+            len(text),
+            model,
+        )
+    for chunk in text_chunks:
+        audio = await _sarvam_tts_rest_mp3_single(
+            client,
+            model=model,
+            text=chunk,
+            speaker=speaker,
+            target_language_code=target_language_code,
+            pace=pace,
+        )
+        yield audio
 
 
 async def sarvam_stt_transcript_simple_http(
@@ -645,6 +743,7 @@ async def create_speech(
     lang, speaker = await resolve_tts_language_and_speaker(body, settings)
     resolve_ms = _elapsed_ms(req_t0)
     pace = _pace_from_openai_speed(body.speed)
+    max_chars = _effective_tts_max_chars(model, settings)
 
     if settings.log_full_tts_text:
         logger.info(
@@ -675,6 +774,7 @@ async def create_speech(
                 target_language_code=lang,
                 pace=pace,
                 response_format=body.response_format,
+                max_chars=max_chars,
             ),
             media_type="audio/mpeg",
         )
@@ -688,6 +788,7 @@ async def create_speech(
         target_language_code=lang,
         pace=pace,
         response_format=body.response_format,
+        max_chars=max_chars,
     )
     sarv_ms = _elapsed_ms(t_sarv)
     total_ms = _elapsed_ms(req_t0)
