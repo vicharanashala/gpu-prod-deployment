@@ -4,3 +4,4 @@ ajrasakha/.env
 voice-services/.env
 voice-services/__pycache__/
 vision_model_containerzation/__pycache__
+logs

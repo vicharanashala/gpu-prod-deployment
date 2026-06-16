@@ -10,11 +10,15 @@ from __future__ import annotations
 import asyncio
 import base64
 import logging
+import re
 import shutil
+import struct
 import subprocess
 import sys
+import tempfile
 import time
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Any, AsyncIterator, Literal, Optional
@@ -31,9 +35,33 @@ from tts_language_detection import detect_tts_language_code, pick_tts_speaker
 
 logger = logging.getLogger("voice_services")
 
+# ~50ms silent MP3 returned when sanitization leaves nothing to speak (avoids client errors).
+_SILENT_MP3_BYTES = base64.standard_b64decode(
+    "SUQzBAAAAAAAIlRTU0UAAAAOAAADTGF2ZjYxLjcuMTAyAAAAAAAAAAAAAAD/+1DEAAPAAAGkAAAAIAAANIAAAARMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//tSxF2DwAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+1LEoYPAAAGkAAAAIAAANIAAAARVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ=="
+)
+
 
 def _elapsed_ms(start: float) -> float:
     return (time.perf_counter() - start) * 1000.0
+
+
+class PrepTrace:
+    """Collect prep/fallback steps for one request; echoed to stdout and file logs."""
+
+    __slots__ = ("steps",)
+
+    def __init__(self) -> None:
+        self.steps: list[str] = []
+
+    def add(self, step: str) -> None:
+        self.steps.append(step)
+        logger.info("prep: %s", step)
+
+    def absorb(self, other: PrepTrace) -> None:
+        self.steps.extend(other.steps)
+
+    def format(self) -> str:
+        return " → ".join(self.steps) if self.steps else "none"
 
 
 def _install_voice_service_log_handlers() -> None:
@@ -97,6 +125,21 @@ class Settings(BaseSettings):
         validation_alias="STT_USE_REST",
         description="true: Sarvam REST speech_to_text (multipart HTTP). false: WebSocket streaming STT.",
     )
+    stt_max_audio_seconds: float = Field(
+        default=60.0,
+        validation_alias="STT_MAX_AUDIO_SECONDS",
+        description="Maximum upload duration accepted by this service (seconds).",
+    )
+    stt_chunk_seconds: float = Field(
+        default=30.0,
+        validation_alias="STT_CHUNK_SECONDS",
+        description="Max segment length per Sarvam REST call (seconds).",
+    )
+    stt_chunk_delay_seconds: float = Field(
+        default=2.0,
+        validation_alias="STT_CHUNK_DELAY_SECONDS",
+        description="Pause between sequential Sarvam STT chunk requests (seconds).",
+    )
     # When true, log the complete STT transcript string at INFO (may contain PII; use only in dev).
     log_full_stt_transcript: bool = Field(
         default=False,
@@ -106,6 +149,21 @@ class Settings(BaseSettings):
     log_full_tts_text: bool = Field(
         default=False,
         validation_alias="LOG_FULL_TTS_TEXT",
+    )
+    # Master switch for TTS file logging (default off). Requires TTS_LOG_DIR when enabled.
+    tts_log_enabled: bool = Field(
+        default=False,
+        validation_alias="TTS_LOG_ENABLED",
+    )
+    # Directory for TTS log files when TTS_LOG_ENABLED=true (e.g. /app/logs mounted from host).
+    tts_log_dir: str = Field(
+        default="/app/logs",
+        validation_alias="TTS_LOG_DIR",
+    )
+    # When true (and TTS_LOG_ENABLED=true), also write one .txt file per request with full text.
+    tts_log_full_text_files: bool = Field(
+        default=False,
+        validation_alias="TTS_LOG_FULL_TEXT_FILES",
     )
 
     # TTS: optional LLM language detection (OpenAI-compatible chat). If unset, use DEFAULT_TTS_LANGUAGE.
@@ -126,6 +184,21 @@ class Settings(BaseSettings):
     tts_max_chars_per_request: Optional[int] = Field(
         default=None,
         validation_alias="TTS_MAX_CHARS_PER_REQUEST",
+    )
+    # Ordered suffix markers stripped before TTS (first match wins). Use ``||`` between markers.
+    tts_strip_markers: str = Field(
+        default="📚 Sources:||⚠️ Important Notice (Testing) ⚠️",
+        validation_alias="TTS_STRIP_MARKERS",
+        description=(
+            "Ordered markers; text from the first match onward is removed before TTS. "
+            "Separate markers with || or newlines. Empty disables stripping."
+        ),
+    )
+    # Optional extra regex patterns (|| separated) removed anywhere in the text before TTS.
+    tts_strip_patterns: str = Field(
+        default="",
+        validation_alias="TTS_STRIP_PATTERNS",
+        description="Additional regex patterns merged with built-in WorkDrive / link patterns.",
     )
 
 
@@ -166,7 +239,304 @@ class SpeechRequest(BaseModel):
     target_language_code: Optional[str] = None
 
 
-async def resolve_tts_language_and_speaker(body: SpeechRequest, settings: Settings) -> tuple[str, str]:
+def _parse_tts_strip_markers(raw: str) -> list[str]:
+    """Parse ``TTS_STRIP_MARKERS`` into an ordered list (``||`` or newline separated)."""
+    if not raw.strip():
+        return []
+    if "||" in raw:
+        parts = raw.split("||")
+    else:
+        parts = raw.splitlines()
+    return [part.strip() for part in parts if part.strip()]
+
+
+# Zoho WorkDrive refs and source-link lines that LibreChat sometimes sends as TTS input.
+_BUILTIN_TTS_STRIP_REGEXES: tuple[tuple[str, str], ...] = (
+    ("workdrive_url", r"https?://workdrive\.zoho(?:external)?\.in/file/[A-Za-z0-9]+"),
+    ("in_file_fragment", r"\bin/file/[A-Za-z0-9]+\b"),
+    ("link_emoji_line", r"^\s*🔗\s*.+$"),
+)
+
+
+def _parse_tts_strip_patterns(raw: str) -> list[str]:
+    """Parse ``TTS_STRIP_PATTERNS`` (``||`` or newline separated regexes)."""
+    return _parse_tts_strip_markers(raw)
+
+
+def _apply_tts_regex_strips(
+    text: str,
+    patterns: list[tuple[str, str]],
+    prep: PrepTrace,
+) -> str:
+    out = text
+    for name, pattern in patterns:
+        try:
+            new = re.sub(pattern, "", out, flags=re.MULTILINE | re.IGNORECASE)
+        except re.error as exc:
+            logger.warning("TTS strip regex invalid %r: %s", pattern, exc)
+            prep.add(f"strip:regex:{name}:invalid({exc})")
+            continue
+        if len(new) != len(out):
+            prep.add(f"strip:regex:{name}({len(out)}→{len(new)} chars)")
+            out = new
+    out = re.sub(r"[ \t]+\n", "\n", out)
+    out = re.sub(r"\n{3,}", "\n\n", out)
+    return out.strip()
+
+
+def _prepare_tts_text(text: str, settings: Settings, *, prep: PrepTrace) -> str:
+    """
+    Sanitize TTS input: remove file/link patterns, then truncate at suffix markers.
+    """
+    patterns: list[tuple[str, str]] = list(_BUILTIN_TTS_STRIP_REGEXES)
+    for i, pattern in enumerate(_parse_tts_strip_patterns(settings.tts_strip_patterns)):
+        patterns.append((f"custom:{i}", pattern))
+
+    out = _apply_tts_regex_strips(text, patterns, prep) if patterns else text
+
+    markers = _parse_tts_strip_markers(settings.tts_strip_markers)
+    for marker in markers:
+        idx = out.find(marker)
+        if idx != -1:
+            stripped = out[:idx].rstrip()
+            prep.add(f"strip:marker:{marker!r}({len(out)}→{len(stripped)} chars)")
+            return stripped
+
+    if not any(step.startswith("strip:") for step in prep.steps):
+        prep.add("strip:none")
+    return out
+
+
+def _write_tts_log_file(
+    log_dir: str,
+    *,
+    model: str,
+    lang: str,
+    speaker: str,
+    stream: bool,
+    raw_input: str,
+    tts_text: str,
+    prep_trace: str,
+    write_full_text_files: bool,
+    total_ms: Optional[float] = None,
+    resolve_ms: Optional[float] = None,
+    sarv_ms: Optional[float] = None,
+    out_bytes: Optional[int] = None,
+) -> None:
+    path = Path(log_dir)
+    path.mkdir(parents=True, exist_ok=True)
+    log_file = path / "tts.log"
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    ts_slug = ts.replace(":", "-")
+    lines = [
+        f"--- {ts} ---",
+        f"model={model!r} lang={lang!r} speaker={speaker!r} stream={stream}",
+        f"full_input_chars={len(raw_input)} text_spoken_chars={len(tts_text)}",
+        f"prep={prep_trace}",
+    ]
+    if total_ms is not None:
+        lines.append(
+            "timing_ms "
+            f"total={total_ms:.1f} resolve={resolve_ms:.1f} sarvam={sarv_ms:.1f} out_bytes={out_bytes}"
+        )
+    lines.extend(
+        [
+            "--- full_input ---",
+            raw_input,
+            "--- text_spoken ---",
+            tts_text,
+            "",
+        ]
+    )
+    with log_file.open("a", encoding="utf-8") as handle:
+        handle.write("\n".join(lines) + "\n")
+
+    if write_full_text_files:
+        full_text_dir = path / "full-text"
+        full_text_dir.mkdir(parents=True, exist_ok=True)
+        full_text_file = full_text_dir / f"{ts_slug}.txt"
+        full_text_body = "\n".join(
+            [
+                f"timestamp: {ts}",
+                f"model: {model}",
+                f"lang: {lang}",
+                f"speaker: {speaker}",
+                f"stream: {stream}",
+                f"prep: {prep_trace}",
+                "",
+                "=== full_input ===",
+                raw_input,
+                "",
+                "=== text_spoken ===",
+                tts_text,
+                "",
+            ]
+        )
+        full_text_file.write_text(full_text_body, encoding="utf-8")
+
+
+async def _append_tts_log(
+    settings: Settings,
+    *,
+    model: str,
+    lang: str,
+    speaker: str,
+    stream: bool,
+    raw_input: str,
+    tts_text: str,
+    prep_trace: str,
+    total_ms: Optional[float] = None,
+    resolve_ms: Optional[float] = None,
+    sarv_ms: Optional[float] = None,
+    out_bytes: Optional[int] = None,
+) -> None:
+    if not settings.tts_log_enabled:
+        return
+    log_dir = (settings.tts_log_dir or "").strip() or "/app/logs"
+    try:
+        await asyncio.to_thread(
+            _write_tts_log_file,
+            log_dir,
+            model=model,
+            lang=lang,
+            speaker=speaker,
+            stream=stream,
+            raw_input=raw_input,
+            tts_text=tts_text,
+            prep_trace=prep_trace,
+            write_full_text_files=settings.tts_log_full_text_files,
+            total_ms=total_ms,
+            resolve_ms=resolve_ms,
+            sarv_ms=sarv_ms,
+            out_bytes=out_bytes,
+        )
+    except OSError as exc:
+        logger.warning("TTS file log failed dir=%r: %s", log_dir, exc)
+
+
+def _write_stt_log_file(
+    log_dir: str,
+    *,
+    model: str,
+    language_code: str,
+    backend: str,
+    filename: Optional[str],
+    content_type: Optional[str],
+    upload_bytes: int,
+    duration_sec: Optional[float],
+    n_chunks: int,
+    chunked: bool,
+    transcript: str,
+    prep_trace: str,
+    total_ms: float,
+    read_ms: float,
+    prep_ms: float,
+    stt_ms: float,
+    write_full_text_files: bool,
+) -> None:
+    path = Path(log_dir)
+    path.mkdir(parents=True, exist_ok=True)
+    log_file = path / "stt.log"
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    ts_slug = ts.replace(":", "-")
+    duration_log = f"{duration_sec:.2f}" if duration_sec is not None else "unknown"
+    lines = [
+        f"--- {ts} ---",
+        f"model={model!r} language_code={language_code!r} backend={backend!r}",
+        f"filename={filename!r} content_type={content_type!r} upload_bytes={upload_bytes}",
+        f"duration_sec={duration_log} n_chunks={n_chunks} chunked={chunked}",
+        f"transcript_len={len(transcript)}",
+        f"prep={prep_trace}",
+        f"timing_ms total={total_ms:.1f} read={read_ms:.1f} prep={prep_ms:.1f} sarvam={stt_ms:.1f}",
+        "--- transcript ---",
+        transcript,
+        "",
+    ]
+    with log_file.open("a", encoding="utf-8") as handle:
+        handle.write("\n".join(lines) + "\n")
+
+    if write_full_text_files:
+        full_text_dir = path / "full-text-stt"
+        full_text_dir.mkdir(parents=True, exist_ok=True)
+        full_text_file = full_text_dir / f"{ts_slug}.txt"
+        full_text_file.write_text(
+            "\n".join(
+                [
+                    f"timestamp: {ts}",
+                    f"model: {model}",
+                    f"language_code: {language_code}",
+                    f"backend: {backend}",
+                    f"filename: {filename}",
+                    f"content_type: {content_type}",
+                    f"upload_bytes: {upload_bytes}",
+                    f"duration_sec: {duration_log}",
+                    f"n_chunks: {n_chunks}",
+                    f"chunked: {chunked}",
+                    f"prep: {prep_trace}",
+                    "",
+                    "=== transcript ===",
+                    transcript,
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+
+
+async def _append_stt_log(
+    settings: Settings,
+    *,
+    model: str,
+    language_code: str,
+    backend: str,
+    filename: Optional[str],
+    content_type: Optional[str],
+    upload_bytes: int,
+    duration_sec: Optional[float],
+    n_chunks: int,
+    chunked: bool,
+    transcript: str,
+    prep_trace: str,
+    total_ms: float,
+    read_ms: float,
+    prep_ms: float,
+    stt_ms: float,
+) -> None:
+    if not settings.tts_log_enabled:
+        return
+    log_dir = (settings.tts_log_dir or "").strip() or "/app/logs"
+    try:
+        await asyncio.to_thread(
+            _write_stt_log_file,
+            log_dir,
+            model=model,
+            language_code=language_code,
+            backend=backend,
+            filename=filename,
+            content_type=content_type,
+            upload_bytes=upload_bytes,
+            duration_sec=duration_sec,
+            n_chunks=n_chunks,
+            chunked=chunked,
+            transcript=transcript,
+            prep_trace=prep_trace,
+            total_ms=total_ms,
+            read_ms=read_ms,
+            prep_ms=prep_ms,
+            stt_ms=stt_ms,
+            write_full_text_files=settings.tts_log_full_text_files,
+        )
+    except OSError as exc:
+        logger.warning("STT file log failed dir=%r: %s", log_dir, exc)
+
+
+async def resolve_tts_language_and_speaker(
+    body: SpeechRequest,
+    settings: Settings,
+    *,
+    tts_text: str,
+    prep: PrepTrace,
+) -> tuple[str, str]:
     """
     If `target_language_code` is set, use it with standard OpenAI→Sarvam voice mapping.
     Otherwise, when TTS_LANG_DETECT_BASE_URL is set, detect language via chat completions
@@ -176,12 +546,9 @@ async def resolve_tts_language_and_speaker(body: SpeechRequest, settings: Settin
     if body.target_language_code:
         lang = body.target_language_code.strip()
         speaker = _map_openai_voice_to_speaker(body.voice, settings.default_tts_speaker)
-        logger.info(
-            "TTS lang: manual target_language_code=%r voice=%r -> speaker=%r (%.1f ms)",
-            lang,
-            body.voice,
-            speaker,
-            _elapsed_ms(t0),
+        prep.add(
+            f"lang:manual(target={lang!r} voice={body.voice!r}→speaker={speaker!r} "
+            f"{_elapsed_ms(t0):.1f}ms)"
         )
         return lang, speaker
 
@@ -189,7 +556,7 @@ async def resolve_tts_language_and_speaker(body: SpeechRequest, settings: Settin
     if base:
         t_detect = time.perf_counter()
         detected = await detect_tts_language_code(
-            body.input,
+            tts_text,
             base_url=base,
             model=settings.tts_lang_detect_model,
             timeout=settings.tts_lang_detect_timeout,
@@ -197,26 +564,22 @@ async def resolve_tts_language_and_speaker(body: SpeechRequest, settings: Settin
         detect_ms = _elapsed_ms(t_detect)
         lang = detected or settings.default_tts_language
         speaker = pick_tts_speaker(lang, body.voice, settings.default_tts_gender)
-        logger.info(
-            "TTS lang: LLM detected=%r resolved=%r speaker=%r gender=%s "
-            "(detect %.1f ms, resolve_total %.1f ms)%s",
-            detected,
-            lang,
-            speaker,
-            settings.default_tts_gender,
-            detect_ms,
-            _elapsed_ms(t0),
-            "" if detected else " [fallback DEFAULT_TTS_LANGUAGE]",
-        )
+        if detected:
+            prep.add(
+                f"lang:llm_detect(detected={detected!r}→{lang!r} speaker={speaker!r} "
+                f"detect={detect_ms:.1f}ms total={_elapsed_ms(t0):.1f}ms)"
+            )
+        else:
+            prep.add(
+                f"lang:llm_detect_fail→default({settings.default_tts_language!r} "
+                f"speaker={speaker!r} detect={detect_ms:.1f}ms total={_elapsed_ms(t0):.1f}ms)"
+            )
         return lang, speaker
 
     lang = settings.default_tts_language
     speaker = _map_openai_voice_to_speaker(body.voice, settings.default_tts_speaker)
-    logger.info(
-        "TTS lang: no detector URL; default_language=%r speaker=%r (%.1f ms)",
-        lang,
-        speaker,
-        _elapsed_ms(t0),
+    prep.add(
+        f"lang:no_detector_url(default={lang!r} speaker={speaker!r} {_elapsed_ms(t0):.1f}ms)"
     )
     return lang, speaker
 
@@ -253,12 +616,20 @@ _OPENAI_STT_MODEL_ALIASES = frozenset(
 )
 
 
-def _resolve_stt_model_for_sarvam(request_model: Optional[str], default_model: str) -> str:
+def _resolve_stt_model_for_sarvam(
+    request_model: Optional[str],
+    default_model: str,
+    *,
+    prep: Optional[PrepTrace] = None,
+) -> str:
     if not request_model or not str(request_model).strip():
         return default_model
     m = str(request_model).strip()
     if m.lower() in _OPENAI_STT_MODEL_ALIASES:
-        logger.info("STT: mapping OpenAI model %r -> Sarvam default %r", m, default_model)
+        if prep is not None:
+            prep.add(f"model:openai_alias({m!r}→{default_model!r})")
+        else:
+            logger.info("STT: mapping OpenAI model %r -> Sarvam default %r", m, default_model)
         return default_model
     return m
 
@@ -267,35 +638,509 @@ def _looks_like_riff_wav(data: bytes) -> bool:
     return len(data) >= 12 and data[:4] == b"RIFF" and data[8:12] == b"WAVE"
 
 
-def _ffmpeg_to_wav_16k_mono(raw: bytes) -> bytes:
-    """Decode/transcode arbitrary audio (webm, mp3, …) to 16 kHz mono WAV via ffmpeg."""
+def _ffmpeg_to_wav_16k_mono(raw: bytes, *, input_suffix: str = ".audio") -> bytes:
+    """Decode/transcode arbitrary audio (webm, mp3, …) to 16 kHz mono WAV via ffmpeg.
+
+    Writes to a temp file — piping WAV to stdout leaves data chunk size 0xFFFFFFFF,
+    which Sarvam reads as ~134k seconds and rejects.
+    """
+    with tempfile.NamedTemporaryFile(suffix=input_suffix) as inp:
+        inp.write(raw)
+        inp.flush()
+        with tempfile.NamedTemporaryFile(suffix=".wav") as out:
+            proc = subprocess.run(
+                [
+                    "ffmpeg",
+                    "-hide_banner",
+                    "-loglevel",
+                    "error",
+                    "-i",
+                    inp.name,
+                    "-ar",
+                    "16000",
+                    "-ac",
+                    "1",
+                    "-y",
+                    out.name,
+                ],
+                capture_output=True,
+                timeout=120,
+                check=False,
+            )
+            if proc.returncode != 0:
+                err = (proc.stderr or b"").decode("utf-8", errors="replace")[:1200]
+                raise RuntimeError(err or f"ffmpeg failed with exit code {proc.returncode}")
+            out.seek(0)
+            data = out.read()
+    if not data:
+        raise RuntimeError("ffmpeg produced empty WAV output")
+    return data
+
+
+def _parse_ffprobe_duration_line(line: str) -> float:
+    line = line.strip()
+    if not line or line.upper() == "N/A":
+        raise ValueError(f"invalid duration: {line!r}")
+    duration = float(line)
+    if duration <= 0:
+        raise ValueError(f"non-positive duration: {duration}")
+    return duration
+
+
+def _ffprobe_duration_from_path(path: str) -> float:
     proc = subprocess.run(
         [
-            "ffmpeg",
-            "-hide_banner",
-            "-loglevel",
+            "ffprobe",
+            "-v",
             "error",
-            "-i",
-            "pipe:0",
-            "-ar",
-            "16000",
-            "-ac",
-            "1",
-            "-f",
-            "wav",
-            "pipe:1",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "default=noprint_wrappers=1:nokey=1",
+            path,
         ],
-        input=raw,
         capture_output=True,
-        timeout=120,
+        timeout=30,
         check=False,
     )
     if proc.returncode != 0:
-        err = (proc.stderr or b"").decode("utf-8", errors="replace")[:1200]
-        raise RuntimeError(err or f"ffmpeg failed with exit code {proc.returncode}")
-    if not proc.stdout:
-        raise RuntimeError("ffmpeg produced empty WAV output")
-    return proc.stdout
+        err = (proc.stderr or b"").decode("utf-8", errors="replace")[:800]
+        raise RuntimeError(err or f"ffprobe failed with exit code {proc.returncode}")
+    line = (proc.stdout or b"").decode("utf-8", errors="replace").strip()
+    return _parse_ffprobe_duration_line(line)
+
+
+def _wav_duration_from_header(raw: bytes) -> Optional[float]:
+    """Best-effort WAV duration from RIFF header when ffprobe on stdin fails."""
+    if not _looks_like_riff_wav(raw) or len(raw) < 44:
+        return None
+    try:
+        byte_rate = struct.unpack_from("<I", raw, 28)[0]
+        if byte_rate < 8000 or byte_rate > 384_000:
+            return None
+        offset = 12
+        while offset + 8 <= len(raw):
+            chunk_id = raw[offset : offset + 4]
+            chunk_size = struct.unpack_from("<I", raw, offset + 4)[0]
+            if chunk_id == b"data":
+                if chunk_size <= 0 or chunk_size > len(raw):
+                    return None
+                duration = chunk_size / byte_rate
+                if duration <= 0:
+                    return None
+                return duration
+            if chunk_size > len(raw):
+                return None
+            offset += 8 + chunk_size
+    except (struct.error, ZeroDivisionError):
+        return None
+    return None
+
+
+def _max_plausible_duration_seconds(byte_len: int, *, configured_max: float) -> float:
+    """Upper bound from file size (assumes ≥2 kbit/s effective bitrate for compressed voice)."""
+    if byte_len <= 0:
+        return 0.0
+    from_size = (byte_len * 8) / 2000.0
+    return max(configured_max * 1.5, from_size)
+
+
+def _is_plausible_stt_duration(
+    duration_sec: float,
+    byte_len: int,
+    *,
+    configured_max: float,
+) -> bool:
+    if duration_sec <= 0:
+        return False
+    if duration_sec > _max_plausible_duration_seconds(byte_len, configured_max=configured_max):
+        return False
+    return True
+
+
+def _guess_probe_suffix(filename: Optional[str], content_type: Optional[str]) -> str:
+    ct = (content_type or "").split(";")[0].strip().lower()
+    by_type = {
+        "video/webm": ".webm",
+        "audio/webm": ".webm",
+        "audio/wav": ".wav",
+        "audio/x-wav": ".wav",
+        "audio/mpeg": ".mp3",
+        "audio/mp3": ".mp3",
+        "audio/mp4": ".m4a",
+        "video/mp4": ".mp4",
+        "audio/ogg": ".ogg",
+        "audio/flac": ".flac",
+    }
+    if ct in by_type:
+        return by_type[ct]
+    if filename:
+        suf = Path(filename).suffix.lower()
+        if suf in {".webm", ".wav", ".mp3", ".m4a", ".mp4", ".ogg", ".opus", ".flac"}:
+            return suf
+    return ".audio"
+
+
+def _ffmpeg_decode_duration_seconds(raw: bytes) -> float:
+    """Decode via ffmpeg to WAV and measure duration (works when container metadata is N/A)."""
+    if not shutil.which("ffmpeg"):
+        raise RuntimeError("ffmpeg not available")
+    wav = _ffmpeg_to_wav_16k_mono(raw)
+    with tempfile.NamedTemporaryFile(suffix=".wav") as tmp:
+        tmp.write(wav)
+        tmp.flush()
+        return _ffprobe_duration_from_path(tmp.name)
+
+
+def _ffprobe_duration_seconds(
+    raw: bytes,
+    *,
+    upload_filename: Optional[str] = None,
+    content_type: Optional[str] = None,
+    prep: Optional[PrepTrace] = None,
+) -> float:
+    """Return audio duration in seconds; tries ffprobe, then ffmpeg decode."""
+    errors: list[str] = []
+    suffix = _guess_probe_suffix(upload_filename, content_type)
+
+    if shutil.which("ffprobe"):
+        for label, args in (
+            ("stdin", ["pipe:0"]),
+            ("stdin_dash", ["-i", "-"]),
+        ):
+            proc = subprocess.run(
+                [
+                    "ffprobe",
+                    "-v",
+                    "error",
+                    "-show_entries",
+                    "format=duration",
+                    "-of",
+                    "default=noprint_wrappers=1:nokey=1",
+                    *args,
+                ],
+                input=raw,
+                capture_output=True,
+                timeout=30,
+                check=False,
+            )
+            line = (proc.stdout or b"").decode("utf-8", errors="replace").strip()
+            if proc.returncode == 0 and line:
+                try:
+                    duration = _parse_ffprobe_duration_line(line)
+                    if prep is not None:
+                        prep.add(f"duration:ffprobe_{label}_ok({duration:.2f}s)")
+                    return duration
+                except ValueError as exc:
+                    msg = f"ffprobe {label}: {exc}"
+                    errors.append(msg)
+                    if prep is not None:
+                        prep.add(f"duration:ffprobe_{label}_fail({exc})")
+            else:
+                err = (proc.stderr or b"").decode("utf-8", errors="replace")[:400]
+                msg = f"ffprobe {label}: exit={proc.returncode} line={line!r} stderr={err!r}"
+                errors.append(msg)
+                if prep is not None:
+                    prep.add(f"duration:ffprobe_{label}_fail(exit={proc.returncode})")
+
+        try:
+            with tempfile.NamedTemporaryFile(suffix=suffix) as tmp:
+                tmp.write(raw)
+                tmp.flush()
+                duration = _ffprobe_duration_from_path(tmp.name)
+                if prep is not None:
+                    prep.add(f"duration:ffprobe_tempfile{suffix}_ok({duration:.2f}s)")
+                return duration
+        except (RuntimeError, ValueError) as exc:
+            msg = f"ffprobe tempfile({suffix}): {exc}"
+            errors.append(msg)
+            if prep is not None:
+                prep.add(f"duration:ffprobe_tempfile{suffix}_fail({exc})")
+
+    wav_duration = _wav_duration_from_header(raw)
+    if wav_duration is not None:
+        if prep is not None:
+            prep.add(f"duration:wav_header_ok({wav_duration:.2f}s)")
+        return wav_duration
+
+    if shutil.which("ffmpeg"):
+        try:
+            duration = _ffmpeg_decode_duration_seconds(raw)
+            if prep is not None:
+                prep.add(f"duration:ffmpeg_decode_ok({duration:.2f}s)")
+            return duration
+        except (RuntimeError, ValueError) as exc:
+            msg = f"ffmpeg decode duration: {exc}"
+            errors.append(msg)
+            if prep is not None:
+                prep.add(f"duration:ffmpeg_decode_fail({exc})")
+
+    raise RuntimeError("; ".join(errors) or "ffprobe/ffmpeg not available")
+
+
+async def _ffmpeg_decode_duration_seconds_async(
+    raw: bytes,
+    *,
+    max_audio_seconds: float,
+    prep: Optional[PrepTrace] = None,
+) -> Optional[float]:
+    try:
+        duration = await asyncio.to_thread(_ffmpeg_decode_duration_seconds, raw)
+    except RuntimeError as exc:
+        if prep is not None:
+            prep.add(f"duration:ffmpeg_decode_retry_fail({exc})")
+        else:
+            logger.warning("STT ffmpeg decode duration failed: %s", exc)
+        return None
+    if not _is_plausible_stt_duration(
+        duration,
+        len(raw),
+        configured_max=max_audio_seconds,
+    ):
+        if prep is not None:
+            prep.add(
+                f"duration:ffmpeg_decode_retry_implausible({duration:.2f}s "
+                f"bytes={len(raw)})"
+            )
+        else:
+            logger.warning(
+                "STT ffmpeg decode duration implausible duration_sec=%.2f upload_bytes=%d",
+                duration,
+                len(raw),
+            )
+        return None
+    if prep is not None:
+        prep.add(f"duration:ffmpeg_decode_retry_ok({duration:.2f}s)")
+    return duration
+
+
+def _is_sarvam_stt_duration_limit_error(exc: HTTPException) -> bool:
+    if exc.status_code != 400:
+        return False
+    detail = str(exc.detail).lower()
+    return "30 second" in detail or (
+        "maximum limit" in detail and "duration" in detail
+    )
+
+
+async def _probe_stt_duration_seconds(
+    raw: bytes,
+    *,
+    upload_filename: Optional[str],
+    content_type: Optional[str],
+    max_audio_seconds: float,
+    prep: PrepTrace,
+) -> Optional[float]:
+    """Probe upload duration; log and return None on failure or implausible values."""
+    try:
+        duration_sec = await asyncio.to_thread(
+            _ffprobe_duration_seconds,
+            raw,
+            upload_filename=upload_filename,
+            content_type=content_type,
+            prep=prep,
+        )
+    except RuntimeError as exc:
+        prep.add(f"duration:probe_failed({exc})")
+        logger.warning(
+            "STT duration probe failed upload_bytes=%d filename=%r content_type=%r: %s",
+            len(raw),
+            upload_filename,
+            content_type,
+            exc,
+        )
+        return None
+
+    if not _is_plausible_stt_duration(
+        duration_sec,
+        len(raw),
+        configured_max=max_audio_seconds,
+    ):
+        prep.add(
+            f"duration:implausible({duration_sec:.2f}s)→unknown "
+            f"(max_plausible={_max_plausible_duration_seconds(len(raw), configured_max=max_audio_seconds):.1f}s)"
+        )
+        logger.warning(
+            "STT duration probe implausible duration_sec=%.2f upload_bytes=%d "
+            "max_plausible=%.1f filename=%r — treating as unknown",
+            duration_sec,
+            len(raw),
+            _max_plausible_duration_seconds(len(raw), configured_max=max_audio_seconds),
+            upload_filename,
+        )
+        return None
+
+    prep.add(f"duration:probe_ok({duration_sec:.2f}s)")
+    logger.info(
+        "STT duration probe: duration_sec=%.2f upload_bytes=%d filename=%r content_type=%r",
+        duration_sec,
+        len(raw),
+        upload_filename,
+        content_type,
+    )
+    return duration_sec
+
+
+def _sarvam_safe_chunk_seconds(chunk_seconds: float) -> float:
+    """Sarvam REST rejects segments at the 30s boundary; stay slightly under."""
+    return min(chunk_seconds, 29.0)
+
+
+def _wav_duration_via_tempfile(wav_bytes: bytes) -> float:
+    with tempfile.NamedTemporaryFile(suffix=".wav") as tmp:
+        tmp.write(wav_bytes)
+        tmp.flush()
+        return _ffprobe_duration_from_path(tmp.name)
+
+
+def _ensure_wav_max_duration(
+    wav_bytes: bytes,
+    max_sec: float,
+    *,
+    prep: Optional[PrepTrace] = None,
+    chunk_index: Optional[int] = None,
+) -> bytes:
+    """Re-trim WAV when ffmpeg produced a segment Sarvam would reject."""
+    try:
+        duration = _wav_duration_via_tempfile(wav_bytes)
+    except (RuntimeError, ValueError):
+        return wav_bytes
+    if duration <= max_sec + 0.05:
+        return wav_bytes
+    chunk_label = f"chunk={chunk_index} " if chunk_index is not None else ""
+    if prep is not None:
+        prep.add(f"chunk_trim:{chunk_label}{duration:.2f}s→{max_sec:.1f}s")
+    logger.warning(
+        "STT chunk trim: segment duration_sec=%.2f exceeds max=%.1f — re-encoding",
+        duration,
+        max_sec,
+    )
+    with tempfile.NamedTemporaryFile(suffix=".wav") as inp:
+        inp.write(wav_bytes)
+        inp.flush()
+        with tempfile.NamedTemporaryFile(suffix=".wav") as out:
+            proc = subprocess.run(
+                [
+                    "ffmpeg",
+                    "-hide_banner",
+                    "-loglevel",
+                    "error",
+                    "-i",
+                    inp.name,
+                    "-t",
+                    str(max_sec),
+                    "-ar",
+                    "16000",
+                    "-ac",
+                    "1",
+                    "-y",
+                    out.name,
+                ],
+                capture_output=True,
+                timeout=120,
+                check=False,
+            )
+            if proc.returncode != 0:
+                return wav_bytes
+            out.seek(0)
+            data = out.read()
+    return data or wav_bytes
+
+
+def _ffmpeg_extract_wav_segment(
+    raw: bytes,
+    start_sec: float,
+    duration_sec: float,
+    *,
+    input_suffix: str = ".audio",
+) -> bytes:
+    """Extract a segment as 16 kHz mono WAV via ffmpeg (file output for valid RIFF headers)."""
+    with tempfile.NamedTemporaryFile(suffix=input_suffix) as inp:
+        inp.write(raw)
+        inp.flush()
+        with tempfile.NamedTemporaryFile(suffix=".wav") as out:
+            proc = subprocess.run(
+                [
+                    "ffmpeg",
+                    "-hide_banner",
+                    "-loglevel",
+                    "error",
+                    "-ss",
+                    str(start_sec),
+                    "-t",
+                    str(duration_sec),
+                    "-i",
+                    inp.name,
+                    "-ar",
+                    "16000",
+                    "-ac",
+                    "1",
+                    "-y",
+                    out.name,
+                ],
+                capture_output=True,
+                timeout=120,
+                check=False,
+            )
+            if proc.returncode != 0:
+                err = (proc.stderr or b"").decode("utf-8", errors="replace")[:1200]
+                raise RuntimeError(err or f"ffmpeg failed with exit code {proc.returncode}")
+            out.seek(0)
+            data = out.read()
+    if not data:
+        raise RuntimeError("ffmpeg produced empty WAV segment")
+    return data
+
+
+def _split_audio_into_chunks(
+    raw: bytes,
+    chunk_seconds: float,
+    *,
+    duration_sec: float,
+    input_suffix: str = ".audio",
+    prep: Optional[PrepTrace] = None,
+) -> list[bytes]:
+    """Split audio into WAV segments safely under Sarvam's 30s REST limit."""
+    safe_chunk = _sarvam_safe_chunk_seconds(chunk_seconds)
+    if prep is not None:
+        prep.add(
+            f"split:start(duration={duration_sec:.2f}s safe_chunk={safe_chunk:.1f}s "
+            f"suffix={input_suffix!r})"
+        )
+    chunks: list[bytes] = []
+    start = 0.0
+    chunk_index = 0
+    while start < duration_sec:
+        seg_len = min(safe_chunk, duration_sec - start)
+        if seg_len <= 0:
+            break
+        chunk_index += 1
+        wav = _ffmpeg_extract_wav_segment(raw, start, seg_len, input_suffix=input_suffix)
+        wav = _ensure_wav_max_duration(
+            wav,
+            safe_chunk,
+            prep=prep,
+            chunk_index=chunk_index,
+        )
+        chunks.append(wav)
+        start += safe_chunk
+    if not chunks:
+        raise RuntimeError("ffmpeg produced no audio segments")
+    if prep is not None:
+        prep.add(f"split:done(n_chunks={len(chunks)})")
+    return chunks
+
+
+def _require_ffmpeg_for_stt_chunking() -> None:
+    if shutil.which("ffmpeg") and shutil.which("ffprobe"):
+        return
+    raise HTTPException(
+        status_code=503,
+        detail=(
+            "Audio longer than the Sarvam REST limit requires `ffmpeg` and `ffprobe` on the "
+            "voice-services host to split uploads. Install them or upload shorter audio."
+        ),
+    )
 
 
 async def _prepare_audio_for_sarvam_stt(
@@ -610,6 +1455,162 @@ async def sarvam_stt_transcript_simple_http(
     return text
 
 
+def _merge_stt_transcripts(parts: list[str]) -> str:
+    return " ".join(t.strip() for t in parts if t.strip()).strip()
+
+
+async def sarvam_stt_transcript_chunked(
+    *,
+    settings: Settings,
+    raw: bytes,
+    model: str,
+    language_code: str,
+    mode: str,
+    duration_sec: float,
+    input_suffix: str = ".audio",
+    prep: Optional[PrepTrace] = None,
+) -> tuple[str, int]:
+    """
+    Split audio longer than ``stt_chunk_seconds`` into WAV segments, transcribe each
+    via Sarvam REST sequentially, and merge transcripts.
+    """
+    _require_ffmpeg_for_stt_chunking()
+    safe_chunk = _sarvam_safe_chunk_seconds(settings.stt_chunk_seconds)
+    t0 = time.perf_counter()
+    chunks = await asyncio.to_thread(
+        _split_audio_into_chunks,
+        raw,
+        settings.stt_chunk_seconds,
+        duration_sec=duration_sec,
+        input_suffix=input_suffix,
+        prep=prep,
+    )
+    split_ms = _elapsed_ms(t0)
+    logger.info(
+        "STT chunk split: duration_sec=%.2f n_chunks=%d chunk_limit=%.1f safe_chunk=%.1f "
+        "delay_sec=%.1f (%.1f ms)",
+        duration_sec,
+        len(chunks),
+        settings.stt_chunk_seconds,
+        safe_chunk,
+        settings.stt_chunk_delay_seconds,
+        split_ms,
+    )
+
+    parts: list[str] = []
+    t_stt = time.perf_counter()
+    for index, chunk in enumerate(chunks, start=1):
+        if index > 1 and settings.stt_chunk_delay_seconds > 0:
+            if prep is not None:
+                prep.add(
+                    f"chunk_delay:{settings.stt_chunk_delay_seconds}s "
+                    f"before_chunk={index}/{len(chunks)}"
+                )
+            await asyncio.sleep(settings.stt_chunk_delay_seconds)
+        try:
+            chunk_duration = _wav_duration_via_tempfile(chunk)
+        except (RuntimeError, ValueError):
+            chunk_duration = -1.0
+        if prep is not None:
+            prep.add(
+                f"chunk_stt:{index}/{len(chunks)} "
+                f"wav_bytes={len(chunk)} duration_sec={chunk_duration:.2f}"
+            )
+        logger.info(
+            "STT chunk %d/%d: wav_bytes=%d duration_sec=%.2f",
+            index,
+            len(chunks),
+            len(chunk),
+            chunk_duration,
+        )
+        parts.append(
+            await sarvam_stt_transcript_simple_http(
+                settings=settings,
+                raw=chunk,
+                upload_filename=f"chunk_{index:03d}.wav",
+                content_type="audio/wav",
+                model=model,
+                language_code=language_code,
+                mode=mode,
+            )
+        )
+    text = _merge_stt_transcripts(parts)
+    logger.info(
+        "STT Sarvam REST chunked: duration_sec=%.2f n_chunks=%d transcript_len=%d (%.1f ms)",
+        duration_sec,
+        len(chunks),
+        len(text),
+        _elapsed_ms(t_stt),
+    )
+    return text, len(chunks)
+
+
+async def sarvam_stt_transcript_ws_chunked(
+    client: AsyncSarvamAI,
+    *,
+    settings: Settings,
+    raw: bytes,
+    model: str,
+    language_code: str,
+    mode: str,
+    high_vad: bool,
+    duration_sec: float,
+    input_suffix: str = ".audio",
+    prep: Optional[PrepTrace] = None,
+) -> tuple[str, int]:
+    """Split long audio and transcribe each segment via Sarvam WebSocket."""
+    _require_ffmpeg_for_stt_chunking()
+    safe_chunk = _sarvam_safe_chunk_seconds(settings.stt_chunk_seconds)
+    t0 = time.perf_counter()
+    chunks = await asyncio.to_thread(
+        _split_audio_into_chunks,
+        raw,
+        settings.stt_chunk_seconds,
+        duration_sec=duration_sec,
+        input_suffix=input_suffix,
+        prep=prep,
+    )
+    split_ms = _elapsed_ms(t0)
+    logger.info(
+        "STT WS chunk split: duration_sec=%.2f n_chunks=%d chunk_limit=%.1f safe_chunk=%.1f "
+        "delay_sec=%.1f (%.1f ms)",
+        duration_sec,
+        len(chunks),
+        settings.stt_chunk_seconds,
+        safe_chunk,
+        settings.stt_chunk_delay_seconds,
+        split_ms,
+    )
+
+    parts: list[str] = []
+    t_stt = time.perf_counter()
+    for index, chunk in enumerate(chunks, start=1):
+        if index > 1 and settings.stt_chunk_delay_seconds > 0:
+            await asyncio.sleep(settings.stt_chunk_delay_seconds)
+        audio_b64 = base64.b64encode(chunk).decode("utf-8")
+        parts.append(
+            await sarvam_stt_transcript(
+                client,
+                model=model,
+                language_code=language_code,
+                mode=mode,
+                high_vad=high_vad,
+                audio_b64=audio_b64,
+                encoding="audio/wav",
+                sample_rate=16000,
+            )
+        )
+    text = _merge_stt_transcripts(parts)
+    logger.info(
+        "STT Sarvam WS chunked: duration_sec=%.2f n_chunks=%d transcript_len=%d (%.1f ms)",
+        duration_sec,
+        len(chunks),
+        len(text),
+        _elapsed_ms(t_stt),
+    )
+    return text, len(chunks)
+
+
 async def sarvam_stt_transcript(
     client: AsyncSarvamAI,
     *,
@@ -650,7 +1651,7 @@ async def sarvam_stt_transcript(
                 idle_rounds = 0
             else:
                 idle_rounds += 1
-    text = " ".join(t.strip() for t in transcripts if t.strip()).strip()
+    text = _merge_stt_transcripts(transcripts)
     logger.info(
         "STT Sarvam WS: model=%r language_code=%r recv_messages=%d transcript_len=%d "
         "audio_b64_len=%d (%.1f ms)",
@@ -683,6 +1684,17 @@ async def lifespan(app: FastAPI):
             "LOG_FULL_TTS_TEXT enabled — full TTS input text will be logged per /v1/audio/speech "
             "(env file %s)",
             _VOICE_ENV_FILE,
+        )
+    if settings.tts_log_enabled:
+        log_dir = (settings.tts_log_dir or "").strip() or "/app/logs"
+        logger.info(
+            "TTS_LOG_ENABLED — file logs under %r/tts.log and %r/stt.log "
+            "(per-request full text in %r/full-text/ and %r/full-text-stt/ when "
+            "TTS_LOG_FULL_TEXT_FILES=true)",
+            log_dir,
+            log_dir,
+            log_dir,
+            log_dir,
         )
     try:
         app.state.sarvam = AsyncSarvamAI(api_subscription_key=settings.sarvam_api_key)
@@ -740,36 +1752,85 @@ async def create_speech(
 ):
     req_t0 = time.perf_counter()
     model = body.model or settings.default_tts_model
-    lang, speaker = await resolve_tts_language_and_speaker(body, settings)
+    prep = PrepTrace()
+    tts_text = _prepare_tts_text(body.input, settings, prep=prep)
+    if not tts_text.strip():
+        prep.add(f"output:silent_mp3(empty_after_sanitization in_chars={len(body.input)})")
+        logger.info(
+            "TTS skipped: no speakable text after sanitization (in_chars=%d) prep=%s",
+            len(body.input),
+            prep.format(),
+        )
+        await _append_tts_log(
+            settings,
+            model=model,
+            lang="",
+            speaker="",
+            stream=body.stream,
+            raw_input=body.input,
+            tts_text="",
+            prep_trace=prep.format(),
+            total_ms=_elapsed_ms(req_t0),
+            resolve_ms=_elapsed_ms(req_t0),
+            sarv_ms=0.0,
+            out_bytes=len(_SILENT_MP3_BYTES),
+        )
+        return Response(content=_SILENT_MP3_BYTES, media_type="audio/mpeg")
+    lang, speaker = await resolve_tts_language_and_speaker(
+        body, settings, tts_text=tts_text, prep=prep
+    )
     resolve_ms = _elapsed_ms(req_t0)
     pace = _pace_from_openai_speed(body.speed)
     max_chars = _effective_tts_max_chars(model, settings)
+    text_chunks = _chunk_text_for_tts(tts_text, max_chars)
+    if len(text_chunks) > 1:
+        prep.add(f"tts:text_split(n={len(text_chunks)} max_chars={max_chars})")
 
     if settings.log_full_tts_text:
         logger.info(
             "%s",
-            "TTS full input (%d chars) stream=%s model=%r lang=%r speaker=%r:\n%s"
+            "TTS full text stream=%s model=%r lang=%r speaker=%r prep=%s "
+            "full_input_chars=%d text_spoken_chars=%d\n"
+            "=== full_input ===\n%s\n"
+            "=== text_spoken ===\n%s"
             % (
-                len(body.input),
                 body.stream,
                 model,
                 lang,
                 speaker,
+                prep.format(),
+                len(body.input),
+                len(tts_text),
                 body.input,
+                tts_text,
             ),
         )
 
     if body.stream:
+        prep.add("output:stream_mp3")
         logger.info(
-            "TTS request: stream=true model=%r resolve=%.1f ms (Sarvam timing follows on generator close)",
+            "TTS request: stream=true model=%r prep=%s resolve=%.1f ms "
+            "(Sarvam timing follows on generator close)",
             model,
+            prep.format(),
             resolve_ms,
+        )
+        await _append_tts_log(
+            settings,
+            model=model,
+            lang=lang,
+            speaker=speaker,
+            stream=True,
+            raw_input=body.input,
+            tts_text=tts_text,
+            prep_trace=prep.format(),
+            resolve_ms=resolve_ms,
         )
         return StreamingResponse(
             sarvam_tts_stream(
                 client,
                 model=model,
-                text=body.input,
+                text=tts_text,
                 speaker=speaker,
                 target_language_code=lang,
                 pace=pace,
@@ -783,7 +1844,7 @@ async def create_speech(
     audio, media_type = await sarvam_tts_bytes(
         client,
         model=model,
-        text=body.input,
+        text=tts_text,
         speaker=speaker,
         target_language_code=lang,
         pace=pace,
@@ -792,12 +1853,29 @@ async def create_speech(
     )
     sarv_ms = _elapsed_ms(t_sarv)
     total_ms = _elapsed_ms(req_t0)
+    prep.add(f"output:mp3(bytes={len(audio)})")
     logger.info(
-        "TTS request: stream=false total=%.1f ms (resolve+lang %.1f ms, Sarvam %.1f ms) out_bytes=%d",
+        "TTS request: stream=false total=%.1f ms (resolve+lang %.1f ms, Sarvam %.1f ms) "
+        "out_bytes=%d prep=%s",
         total_ms,
         resolve_ms,
         sarv_ms,
         len(audio),
+        prep.format(),
+    )
+    await _append_tts_log(
+        settings,
+        model=model,
+        lang=lang,
+        speaker=speaker,
+        stream=False,
+        raw_input=body.input,
+        tts_text=tts_text,
+        prep_trace=prep.format(),
+        total_ms=total_ms,
+        resolve_ms=resolve_ms,
+        sarv_ms=sarv_ms,
+        out_bytes=len(audio),
     )
     return Response(content=audio, media_type=media_type)
 
@@ -823,43 +1901,159 @@ async def create_transcription(
     if not raw:
         raise HTTPException(status_code=400, detail="Empty audio file.")
 
+    prep = PrepTrace()
     lang = _normalize_stt_language(language, settings.default_stt_language)
-    m = _resolve_stt_model_for_sarvam(model, settings.default_stt_model)
+    m = _resolve_stt_model_for_sarvam(model, settings.default_stt_model, prep=prep)
+    input_suffix = _guess_probe_suffix(file.filename, file.content_type)
+    prep.add(f"input:filename={file.filename!r} suffix={input_suffix!r} bytes={len(raw)}")
+
+    t_probe = time.perf_counter()
+    duration_sec = await _probe_stt_duration_seconds(
+        raw,
+        upload_filename=file.filename,
+        content_type=file.content_type,
+        max_audio_seconds=settings.stt_max_audio_seconds,
+        prep=prep,
+    )
+    probe_ms = _elapsed_ms(t_probe)
+
+    if duration_sec is not None and duration_sec > settings.stt_max_audio_seconds:
+        prep.add(
+            f"reject:duration_exceeds_max({duration_sec:.2f}s>{settings.stt_max_audio_seconds}s)"
+        )
+        logger.warning(
+            "STT rejected: duration_sec=%.2f exceeds max=%.1f upload_bytes=%d filename=%r prep=%s",
+            duration_sec,
+            settings.stt_max_audio_seconds,
+            len(raw),
+            file.filename,
+            prep.format(),
+        )
+        raise HTTPException(
+            status_code=400,
+            detail=f"Audio exceeds maximum length of {settings.stt_max_audio_seconds}s.",
+        )
+
+    chunked = duration_sec is not None and duration_sec > settings.stt_chunk_seconds
+    if chunked:
+        prep.add(f"path:chunked(duration={duration_sec:.2f}s>{settings.stt_chunk_seconds}s)")
+    elif duration_sec is None:
+        prep.add("path:single_call(duration_unknown)")
+        logger.info(
+            "STT duration unknown — using single-call path (no chunking) upload_bytes=%d filename=%r",
+            len(raw),
+            file.filename,
+        )
+    else:
+        prep.add(f"path:single_call(duration={duration_sec:.2f}s)")
+    n_chunks = 1
 
     t_stt = time.perf_counter()
     if settings.stt_use_rest:
-        prep_ms = 0.0
-        text = await sarvam_stt_transcript_simple_http(
-            settings=settings,
-            raw=raw,
-            upload_filename=file.filename,
-            content_type=file.content_type,
-            model=m,
-            language_code=lang,
-            mode=settings.stt_mode,
-        )
+        prep.add("backend:rest")
+        prep_ms = probe_ms
+        if chunked:
+            text, n_chunks = await sarvam_stt_transcript_chunked(
+                settings=settings,
+                raw=raw,
+                model=m,
+                language_code=lang,
+                mode=settings.stt_mode,
+                duration_sec=duration_sec,
+                input_suffix=input_suffix,
+                prep=prep,
+            )
+        else:
+            try:
+                text = await sarvam_stt_transcript_simple_http(
+                    settings=settings,
+                    raw=raw,
+                    upload_filename=file.filename,
+                    content_type=file.content_type,
+                    model=m,
+                    language_code=lang,
+                    mode=settings.stt_mode,
+                )
+            except HTTPException as exc:
+                if not _is_sarvam_stt_duration_limit_error(exc):
+                    raise
+                prep.add("sarvam:30s_limit_error→chunked_retry")
+                retry_duration = duration_sec or await _ffmpeg_decode_duration_seconds_async(
+                    raw,
+                    max_audio_seconds=settings.stt_max_audio_seconds,
+                    prep=prep,
+                )
+                if retry_duration is None or retry_duration <= settings.stt_chunk_seconds:
+                    prep.add("sarvam:chunked_retry_aborted(duration_unavailable_or_short)")
+                    raise
+                if retry_duration > settings.stt_max_audio_seconds:
+                    prep.add(
+                        f"reject:retry_duration_exceeds_max({retry_duration:.2f}s)"
+                    )
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Audio exceeds maximum length of {settings.stt_max_audio_seconds}s.",
+                    )
+                logger.info(
+                    "STT Sarvam 30s limit — retrying chunked duration_sec=%.2f upload_bytes=%d prep=%s",
+                    retry_duration,
+                    len(raw),
+                    prep.format(),
+                )
+                text, n_chunks = await sarvam_stt_transcript_chunked(
+                    settings=settings,
+                    raw=raw,
+                    model=m,
+                    language_code=lang,
+                    mode=settings.stt_mode,
+                    duration_sec=retry_duration,
+                    input_suffix=input_suffix,
+                    prep=prep,
+                )
+                chunked = True
+                duration_sec = retry_duration
         backend = "rest"
         stt_body_len = len(raw)
     else:
-        t_prep = time.perf_counter()
-        wav_bytes, sr = await _prepare_audio_for_sarvam_stt(
-            raw, sample_rate=sample_rate, settings=settings
-        )
-        prep_ms = _elapsed_ms(t_prep)
-        audio_b64 = base64.b64encode(wav_bytes).decode("utf-8")
-        text = await sarvam_stt_transcript(
-            client,
-            model=m,
-            language_code=lang,
-            mode=settings.stt_mode,
-            high_vad=settings.stt_high_vad_sensitivity,
-            audio_b64=audio_b64,
-            encoding="audio/wav",
-            sample_rate=sr,
-        )
-        backend = "websocket"
-        stt_body_len = len(wav_bytes)
+        prep.add("backend:websocket")
+        if not chunked:
+            prep.add("prep:ffmpeg_wav16k")
+            t_prep = time.perf_counter()
+            wav_bytes, sr = await _prepare_audio_for_sarvam_stt(
+                raw, sample_rate=sample_rate, settings=settings
+            )
+            prep_ms = probe_ms + _elapsed_ms(t_prep)
+            audio_b64 = base64.b64encode(wav_bytes).decode("utf-8")
+            text = await sarvam_stt_transcript(
+                client,
+                model=m,
+                language_code=lang,
+                mode=settings.stt_mode,
+                high_vad=settings.stt_high_vad_sensitivity,
+                audio_b64=audio_b64,
+                encoding="audio/wav",
+                sample_rate=sr,
+            )
+            backend = "websocket"
+            stt_body_len = len(wav_bytes)
+        else:
+            text, n_chunks = await sarvam_stt_transcript_ws_chunked(
+                client,
+                settings=settings,
+                raw=raw,
+                model=m,
+                language_code=lang,
+                mode=settings.stt_mode,
+                high_vad=settings.stt_high_vad_sensitivity,
+                duration_sec=duration_sec,
+                input_suffix=input_suffix,
+                prep=prep,
+            )
+            prep_ms = probe_ms
+            backend = "websocket"
+            stt_body_len = len(raw)
     stt_ms = _elapsed_ms(t_stt)
+    prep.add(f"done:transcript_len={len(text)} n_chunks={n_chunks}")
     if settings.log_full_stt_transcript:
         # Single %s so '%' characters in the transcript cannot break logging formatting.
         logger.info(
@@ -867,9 +2061,12 @@ async def create_transcription(
             "STT full transcript (%d chars): %s" % (len(text), text),
         )
     total_ms = _elapsed_ms(req_t0)
+    duration_log = f"{duration_sec:.2f}" if duration_sec is not None else "unknown"
+    prep_trace = prep.format()
     logger.info(
         "STT request: total=%.1f ms (read_upload %.1f ms, prep %.1f ms, Sarvam %.1f ms) "
-        "backend=%s upload_bytes=%d stt_body_bytes=%d language_code=%r",
+        "backend=%s upload_bytes=%d stt_body_bytes=%d language_code=%r "
+        "duration_sec=%s n_chunks=%d chunked=%s prep=%s",
         total_ms,
         read_ms,
         prep_ms,
@@ -878,6 +2075,28 @@ async def create_transcription(
         len(raw),
         stt_body_len,
         lang,
+        duration_log,
+        n_chunks,
+        chunked,
+        prep_trace,
+    )
+    await _append_stt_log(
+        settings,
+        model=m,
+        language_code=lang,
+        backend=backend,
+        filename=file.filename,
+        content_type=file.content_type,
+        upload_bytes=len(raw),
+        duration_sec=duration_sec,
+        n_chunks=n_chunks,
+        chunked=chunked,
+        transcript=text,
+        prep_trace=prep_trace,
+        total_ms=total_ms,
+        read_ms=read_ms,
+        prep_ms=prep_ms,
+        stt_ms=stt_ms,
     )
 
     rf = (response_format or "json").lower().strip()
