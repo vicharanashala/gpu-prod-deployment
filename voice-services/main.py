@@ -1,8 +1,8 @@
 """
 OpenAI-compatible audio routes backed by Sarvam AI streaming TTS/STT.
 
-Environment is loaded from `.env` (see `Settings`). The Sarvam SDK also
-reads `SARVAM_API_KEY` from the environment if not passed explicitly.
+Environment is loaded from `.env` (see `Settings`). Use ``SARVAM_TTS_API_KEY`` and
+``SARVAM_STT_API_KEY``, or a single ``SARVAM_API_KEY`` fallback for both.
 """
 
 from __future__ import annotations
@@ -100,7 +100,19 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    sarvam_api_key: str = Field(validation_alias="SARVAM_API_KEY")
+    sarvam_api_key: Optional[str] = Field(
+        default=None,
+        validation_alias="SARVAM_API_KEY",
+        description="Fallback Sarvam key when TTS/STT-specific keys are unset.",
+    )
+    sarvam_tts_api_key: Optional[str] = Field(
+        default=None,
+        validation_alias="SARVAM_TTS_API_KEY",
+    )
+    sarvam_stt_api_key: Optional[str] = Field(
+        default=None,
+        validation_alias="SARVAM_STT_API_KEY",
+    )
     # Sarvam file STT (plain HTTP multipart — same as ``requests.post(..., files=...)``).
     sarvam_stt_rest_url: str = Field(
         default="https://api.sarvam.ai/speech-to-text",
@@ -212,11 +224,30 @@ class Settings(BaseSettings):
             "second separator."
         ),
     )
+    tts_strip_emojis: bool = Field(
+        default=True,
+        validation_alias="TTS_STRIP_EMOJIS",
+        description="Remove emoji and pictograph characters from text sent to Sarvam TTS.",
+    )
 
 
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+def resolve_sarvam_tts_api_key(settings: Settings) -> str:
+    key = (settings.sarvam_tts_api_key or settings.sarvam_api_key or "").strip()
+    if not key:
+        raise RuntimeError("Set SARVAM_TTS_API_KEY or SARVAM_API_KEY in `.env`.")
+    return key
+
+
+def resolve_sarvam_stt_api_key(settings: Settings) -> str:
+    key = (settings.sarvam_stt_api_key or settings.sarvam_api_key or "").strip()
+    if not key:
+        raise RuntimeError("Set SARVAM_STT_API_KEY or SARVAM_API_KEY in `.env`.")
+    return key
 
 
 def _pace_from_openai_speed(speed: float) -> float:
@@ -269,6 +300,25 @@ _BUILTIN_TTS_STRIP_REGEXES: tuple[tuple[str, str], ...] = (
     ("markdown_link", r"\[[^\]]+\]\([^)]*\)"),
     ("orphan_paren_line", r"^\s*\)\s*$"),
     ("link_emoji_line", r"^\s*🔗\s*.+$"),
+)
+
+# Emoji / pictographs stripped from final TTS text (notice detection runs before this).
+_EMOJI_FOR_TTS_RE = re.compile(
+    "["
+    "\U0001F600-\U0001F64F"
+    "\U0001F300-\U0001F5FF"
+    "\U0001F680-\U0001F6FF"
+    "\U0001F1E0-\U0001F1FF"
+    "\U00002702-\U000027B0"
+    "\U000024C2-\U0001F251"
+    "\U0001F900-\U0001F9FF"
+    "\U0001FA00-\U0001FAFF"
+    "\U00002600-\U000026FF"
+    "\U00002700-\U000027BF"
+    "\u200d"
+    "\ufe0f"
+    "]+",
+    flags=re.UNICODE,
 )
 
 
@@ -355,9 +405,22 @@ def _apply_tts_footnote_segments(
     return part1 or part2
 
 
+def _strip_emojis_for_tts(text: str, prep: PrepTrace) -> str:
+    """Remove emoji from spoken text; segment detection uses the pre-stripped input."""
+    out = _EMOJI_FOR_TTS_RE.sub("", text)
+    out = re.sub(r"^ +", "", out, flags=re.MULTILINE)
+    out = re.sub(r"  +", " ", out)
+    out = re.sub(r"[ \t]+\n", "\n", out)
+    out = re.sub(r"\n{3,}", "\n\n", out)
+    out = out.strip()
+    if len(out) != len(text):
+        prep.add(f"strip:emoji({len(text)}→{len(out)} chars)")
+    return out
+
+
 def _prepare_tts_text(text: str, settings: Settings, *, prep: PrepTrace) -> str:
     """
-    Sanitize TTS input: regex cleanup, then AjraSakha footnote / notice segments.
+    Sanitize TTS input: regex cleanup, AjraSakha footnote / notice segments, then emoji removal.
     """
     patterns: list[tuple[str, str]] = list(_BUILTIN_TTS_STRIP_REGEXES)
     for i, pattern in enumerate(_parse_tts_strip_patterns(settings.tts_strip_patterns)):
@@ -367,25 +430,20 @@ def _prepare_tts_text(text: str, settings: Settings, *, prep: PrepTrace) -> str:
 
     segmented = _apply_tts_footnote_segments(out, settings, prep)
     if segmented is not None:
-        return segmented
+        out = segmented
+    elif (sep := settings.tts_footnote_separator.strip()) and (idx := out.find(sep)) != -1:
+        out = out[:idx].rstrip()
+        prep.add(f"strip:footnote_sep({len(text)}→{len(out)} chars)")
+    else:
+        notice_marker = settings.tts_notice_marker.strip() or "⚠️"
+        if (idx := out.find(notice_marker)) != -1:
+            out = out[:idx].rstrip()
+            prep.add(f"strip:before_notice({len(text)}→{len(out)} chars)")
+        elif not any(step.startswith(("strip:", "segment:")) for step in prep.steps):
+            prep.add("strip:none")
 
-    sep = settings.tts_footnote_separator.strip()
-    if sep:
-        idx = out.find(sep)
-        if idx != -1:
-            stripped = out[:idx].rstrip()
-            prep.add(f"strip:footnote_sep({len(out)}→{len(stripped)} chars)")
-            return stripped
-
-    notice_marker = settings.tts_notice_marker.strip() or "⚠️"
-    idx = out.find(notice_marker)
-    if idx != -1:
-        stripped = out[:idx].rstrip()
-        prep.add(f"strip:before_notice({len(out)}→{len(stripped)} chars)")
-        return stripped
-
-    if not any(step.startswith(("strip:", "segment:")) for step in prep.steps):
-        prep.add("strip:none")
+    if settings.tts_strip_emojis:
+        out = _strip_emojis_for_tts(out, prep)
     return out
 
 
@@ -1498,7 +1556,7 @@ async def sarvam_stt_transcript_simple_http(
     data: dict[str, str] = {"model": model, "language_code": language_code}
     if model.lower().startswith("saaras"):
         data["mode"] = mode
-    headers = {"api-subscription-key": settings.sarvam_api_key}
+    headers = {"api-subscription-key": resolve_sarvam_stt_api_key(settings)}
     files = {"file": (name, raw, ct)}
     timeout = httpx.Timeout(120.0, connect=30.0)
     async with httpx.AsyncClient(timeout=timeout) as http:
@@ -1779,10 +1837,16 @@ async def lifespan(app: FastAPI):
             log_dir,
         )
     try:
-        app.state.sarvam = AsyncSarvamAI(api_subscription_key=settings.sarvam_api_key)
+        app.state.sarvam_tts = AsyncSarvamAI(
+            api_subscription_key=resolve_sarvam_tts_api_key(settings)
+        )
+        app.state.sarvam_stt = AsyncSarvamAI(
+            api_subscription_key=resolve_sarvam_stt_api_key(settings)
+        )
     except Exception as exc:
         raise RuntimeError(
-            "Failed to create AsyncSarvamAI. Set SARVAM_API_KEY in `.env`."
+            "Failed to create AsyncSarvamAI. Set SARVAM_TTS_API_KEY / SARVAM_STT_API_KEY "
+            "(or SARVAM_API_KEY) in `.env`."
         ) from exc
     yield
     # httpx client is owned by the SDK; no explicit close in public API.
@@ -1791,12 +1855,17 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Sarvam Voice (OpenAI-compatible)", lifespan=lifespan)
 
 
-def get_client(request: Request) -> AsyncSarvamAI:
-    return request.app.state.sarvam
+def get_tts_client(request: Request) -> AsyncSarvamAI:
+    return request.app.state.sarvam_tts
+
+
+def get_stt_client(request: Request) -> AsyncSarvamAI:
+    return request.app.state.sarvam_stt
 
 
 SettingsDep = Annotated[Settings, Depends(get_settings)]
-ClientDep = Annotated[AsyncSarvamAI, Depends(get_client)]
+TtsClientDep = Annotated[AsyncSarvamAI, Depends(get_tts_client)]
+SttClientDep = Annotated[AsyncSarvamAI, Depends(get_stt_client)]
 
 
 @app.get("/health")
@@ -1830,7 +1899,7 @@ async def list_models(settings: SettingsDep) -> dict[str, Any]:
 async def create_speech(
     body: SpeechRequest,
     settings: SettingsDep,
-    client: ClientDep,
+    client: TtsClientDep,
 ):
     req_t0 = time.perf_counter()
     model = body.model or settings.default_tts_model
@@ -1965,7 +2034,7 @@ async def create_speech(
 @app.post("/v1/audio/transcriptions")
 async def create_transcription(
     settings: SettingsDep,
-    client: ClientDep,
+    client: SttClientDep,
     file: UploadFile = File(...),
     model: Optional[str] = Form(None),
     language: Optional[str] = Form(None),

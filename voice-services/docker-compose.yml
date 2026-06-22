@@ -1,4 +1,4 @@
-# Local: create `voice-services/.env` with at least SARVAM_API_KEY (see main.py Settings).
+# Local: create `voice-services/.env` with SARVAM_TTS_API_KEY and SARVAM_STT_API_KEY (see main.py Settings).
 services:
   voice-services:
     build:
