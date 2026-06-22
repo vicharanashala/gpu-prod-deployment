@@ -185,20 +185,32 @@ class Settings(BaseSettings):
         default=None,
         validation_alias="TTS_MAX_CHARS_PER_REQUEST",
     )
-    # Ordered suffix markers stripped before TTS (first match wins). Use ``||`` between markers.
-    tts_strip_markers: str = Field(
-        default="📚 Sources:||⚠️ Important Notice (Testing) ⚠️",
-        validation_alias="TTS_STRIP_MARKERS",
-        description=(
-            "Ordered markers; text from the first match onward is removed before TTS. "
-            "Separate markers with || or newlines. Empty disables stripping."
-        ),
+    # Notice block starts at this marker (AjraSakha testing disclaimer).
+    tts_notice_marker: str = Field(
+        default="⚠️",
+        validation_alias="TTS_NOTICE_MARKER",
+        description="Start of the notice block spoken after the main answer.",
     )
     # Optional extra regex patterns (|| separated) removed anywhere in the text before TTS.
     tts_strip_patterns: str = Field(
         default="",
         validation_alias="TTS_STRIP_PATTERNS",
         description="Additional regex patterns merged with built-in WorkDrive / link patterns.",
+    )
+    # AjraSakha footer: speak main body until this line, then the notice block until the next.
+    tts_footnote_separator: str = Field(
+        default="_____________________________",
+        validation_alias="TTS_FOOTNOTE_SEPARATOR",
+        description="Line dividing main answer from footer metadata.",
+    )
+    tts_speak_notice_block: bool = Field(
+        default=True,
+        validation_alias="TTS_SPEAK_NOTICE_BLOCK",
+        description=(
+            "When true and the footnote separator appears twice, speak part 1 (before first "
+            "separator), skip answered-by/sources, then speak the notice block until the "
+            "second separator."
+        ),
     )
 
 
@@ -240,7 +252,7 @@ class SpeechRequest(BaseModel):
 
 
 def _parse_tts_strip_markers(raw: str) -> list[str]:
-    """Parse ``TTS_STRIP_MARKERS`` into an ordered list (``||`` or newline separated)."""
+    """Parse ``||`` or newline separated lists (used for ``TTS_STRIP_PATTERNS``)."""
     if not raw.strip():
         return []
     if "||" in raw:
@@ -254,6 +266,8 @@ def _parse_tts_strip_markers(raw: str) -> list[str]:
 _BUILTIN_TTS_STRIP_REGEXES: tuple[tuple[str, str], ...] = (
     ("workdrive_url", r"https?://workdrive\.zoho(?:external)?\.in/file/[A-Za-z0-9]+"),
     ("in_file_fragment", r"\bin/file/[A-Za-z0-9]+\b"),
+    ("markdown_link", r"\[[^\]]+\]\([^)]*\)"),
+    ("orphan_paren_line", r"^\s*\)\s*$"),
     ("link_emoji_line", r"^\s*🔗\s*.+$"),
 )
 
@@ -284,9 +298,66 @@ def _apply_tts_regex_strips(
     return out.strip()
 
 
+
+def _apply_tts_footnote_segments(
+    text: str,
+    settings: Settings,
+    prep: PrepTrace,
+) -> Optional[str]:
+    """
+    AjraSakha layout: [main answer] ___ [answered-by + sources] [notice] ___ [IMD footer…]
+
+    Speak main answer and notice block only; omit the middle and trailing footer.
+    """
+    sep = settings.tts_footnote_separator.strip()
+    if not settings.tts_speak_notice_block or not sep:
+        return None
+
+    first_sep = text.find(sep)
+    if first_sep == -1:
+        return None
+
+    notice_marker = settings.tts_notice_marker.strip() or "⚠️"
+    notice_idx = text.find(notice_marker)
+
+    # LibreChat often sends a footer-only chunk: [source tail][notice]___[IMD footer]
+    if notice_idx != -1 and notice_idx < first_sep:
+        part2 = text[notice_idx:first_sep].strip()
+        prep.add(
+            f"segment:notice_only_footer_chunk({len(part2)} chars)"
+            " skip_sources_tail_before_notice"
+        )
+        return part2
+
+    part1 = text[:first_sep].rstrip()
+    after_first = text[first_sep + len(sep) :]
+    notice_rel = after_first.find(notice_marker)
+    if notice_rel == -1:
+        prep.add(f"segment:main_only({len(part1)} chars, no_notice_after_sep)")
+        return part1
+
+    after_notice = after_first[notice_rel:]
+    second_rel = after_notice.find(sep, len(notice_marker))
+    if second_rel == -1:
+        part2 = after_notice.strip()
+        prep.add(
+            f"segment:main({len(part1)} chars)+notice({len(part2)} chars, no_second_sep)"
+        )
+    else:
+        part2 = after_notice[:second_rel].strip()
+        prep.add(
+            f"segment:main({len(part1)} chars)+notice({len(part2)} chars)"
+            " skip_answered_by_sources_and_imd_footer"
+        )
+
+    if part1 and part2:
+        return f"{part1}\n\n{part2}"
+    return part1 or part2
+
+
 def _prepare_tts_text(text: str, settings: Settings, *, prep: PrepTrace) -> str:
     """
-    Sanitize TTS input: remove file/link patterns, then truncate at suffix markers.
+    Sanitize TTS input: regex cleanup, then AjraSakha footnote / notice segments.
     """
     patterns: list[tuple[str, str]] = list(_BUILTIN_TTS_STRIP_REGEXES)
     for i, pattern in enumerate(_parse_tts_strip_patterns(settings.tts_strip_patterns)):
@@ -294,15 +365,26 @@ def _prepare_tts_text(text: str, settings: Settings, *, prep: PrepTrace) -> str:
 
     out = _apply_tts_regex_strips(text, patterns, prep) if patterns else text
 
-    markers = _parse_tts_strip_markers(settings.tts_strip_markers)
-    for marker in markers:
-        idx = out.find(marker)
+    segmented = _apply_tts_footnote_segments(out, settings, prep)
+    if segmented is not None:
+        return segmented
+
+    sep = settings.tts_footnote_separator.strip()
+    if sep:
+        idx = out.find(sep)
         if idx != -1:
             stripped = out[:idx].rstrip()
-            prep.add(f"strip:marker:{marker!r}({len(out)}→{len(stripped)} chars)")
+            prep.add(f"strip:footnote_sep({len(out)}→{len(stripped)} chars)")
             return stripped
 
-    if not any(step.startswith("strip:") for step in prep.steps):
+    notice_marker = settings.tts_notice_marker.strip() or "⚠️"
+    idx = out.find(notice_marker)
+    if idx != -1:
+        stripped = out[:idx].rstrip()
+        prep.add(f"strip:before_notice({len(out)}→{len(stripped)} chars)")
+        return stripped
+
+    if not any(step.startswith(("strip:", "segment:")) for step in prep.steps):
         prep.add("strip:none")
     return out
 
